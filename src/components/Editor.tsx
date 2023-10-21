@@ -70,7 +70,6 @@ export default function Editor() {
                 <h1 className="text-3xl font-bold">Experience</h1>
 
                 <form onSubmit={(e) => {
-                    e.preventDefault();
                     const data = getFormData(e);
 
                     if (data.currently) {
@@ -152,7 +151,6 @@ export default function Editor() {
                 <h1 className="text-3xl font-bold">Education</h1>
 
                 <form onSubmit={(e) => {
-                    e.preventDefault();
                     const data = getFormData(e);
                     setArrData("education", data as Education);
                     e.currentTarget.reset();
@@ -188,7 +186,6 @@ export default function Editor() {
                 <h1 className="text-3xl font-bold">Skills</h1>
 
                 <form onSubmit={(e) => {
-                    e.preventDefault();
                     const data = getFormData(e);
                     const skills = splitByComma(data.skills as string);
                     setArrData("skills", skills);
@@ -211,7 +208,6 @@ export default function Editor() {
                 <h1 className="text-3xl font-bold">Projects</h1>
 
                 <form onSubmit={(e) => {
-                    e.preventDefault();
                     const data = getFormData(e);
                     setArrData("projects", data as Projects);
                     e.currentTarget.reset();
@@ -231,13 +227,21 @@ export default function Editor() {
             <section className="mt-4">
                 <h1 className="text-3xl font-bold">Certifications</h1>
 
-                <textarea
-                    className="textarea textarea-bordered mt-4 w-full"
-                    placeholder="Separate your certifications with a comma ( , )"
-                />
-                <button className="btn btn-sm btn-primary mt-4">
-                    Add Certifications
-                </button>
+                <form onSubmit={(e) => {
+                    const data = getFormData(e);
+                    const certs = splitByComma(data.certifications as string);
+                    setArrData("certifications", certs);
+                    e.currentTarget.reset();
+                }}>
+                    <textarea
+                        name="certifications"
+                        className="textarea textarea-bordered mt-4 w-full"
+                        placeholder="Separate your certifications with a comma ( , )"
+                    />
+                    <button className="btn btn-sm btn-primary mt-4">
+                        Add Certifications
+                    </button>
+                </form>
             </section>
 
             <div className="divider"></div>
