@@ -433,13 +433,19 @@ describe('Persistence', () => {
     // Validates: Requirements 1.1, 1.2, 1.3
     it('property test: persistence round trip - saving and loading produces equivalent state', () => {
         // Arbitraries for generating random CV data
+        // Generate date strings in YYYY-MM format directly to avoid invalid date issues
+        const dateStringArb = fc.tuple(
+            fc.integer({ min: 2000, max: 2024 }),
+            fc.integer({ min: 1, max: 12 })
+        ).map(([year, month]) => `${year}-${month.toString().padStart(2, '0')}`);
+
         const experienceArb = fc.record({
             id: fc.uuid(),
             title: fc.string({ minLength: 1, maxLength: 100 }),
             company: fc.string({ minLength: 1, maxLength: 100 }),
             location: fc.string({ minLength: 1, maxLength: 100 }),
-            startDate: fc.date({ min: new Date('2000-01-01'), max: new Date('2025-01-01') }).map(d => d.toISOString().slice(0, 7)),
-            endDate: fc.date({ min: new Date('2000-01-01'), max: new Date('2025-01-01') }).map(d => d.toISOString().slice(0, 7)),
+            startDate: dateStringArb,
+            endDate: dateStringArb,
             description: fc.string({ maxLength: 500 })
         });
 
@@ -448,8 +454,8 @@ describe('Persistence', () => {
             title: fc.string({ minLength: 1, maxLength: 100 }),
             school: fc.string({ minLength: 1, maxLength: 100 }),
             location: fc.string({ minLength: 1, maxLength: 100 }),
-            startDate: fc.date({ min: new Date('2000-01-01'), max: new Date('2025-01-01') }).map(d => d.toISOString().slice(0, 7)),
-            endDate: fc.date({ min: new Date('2000-01-01'), max: new Date('2025-01-01') }).map(d => d.toISOString().slice(0, 7))
+            startDate: dateStringArb,
+            endDate: dateStringArb
         });
 
         const projectArb = fc.record({
