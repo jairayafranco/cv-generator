@@ -54,6 +54,11 @@ export type CvStore = BasicData & ArrData & {
     setContact: (name: keyof Contact, value: string) => void,
     setArrData: (name: setArrDataName, value: setArrDataValue) => void,
     migrateData: () => void,
+    updateArrItem: (name: setArrDataName, id: string, value: setArrDataValue) => void,
+    deleteArrItem: (name: setArrDataName, id: string) => void,
+    clearAll: () => void,
+    exportData: () => string,
+    importData: (jsonString: string) => void,
 };
 
 export type setBasicName = keyof BasicData;

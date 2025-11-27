@@ -1,0 +1,421 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import { useCvStore } from './useCvStore';
+import type { Experience, Education, Projects } from '../types/CvStore';
+
+describe('CV Store CRUD Operations', () => {
+    beforeEach(() => {
+        // Reset store before each test
+        useCvStore.getState().clearAll();
+    });
+
+    describe('updateArrItem', () => {
+        it('should update an experience item by ID', () => {
+            const store = useCvStore.getState();
+            
+            // Add an experience
+            const experience: Experience = {
+                id: 'test-id-1',
+                title: 'Software Engineer',
+                company: 'Tech Corp',
+                location: 'San Francisco',
+                startDate: '2020-01',
+                endDate: '2023-01',
+                description: 'Built things'
+            };
+            store.setArrData('experience', experience);
+
+            // Update the experience
+            const updatedExperience: Experience = {
+                id: 'test-id-1',
+                title: 'Senior Software Engineer',
+                company: 'Tech Corp',
+                location: 'San Francisco',
+                startDate: '2020-01',
+                endDate: '2023-01',
+                description: 'Built better things'
+            };
+            store.updateArrItem('experience', 'test-id-1', updatedExperience);
+
+            const state = useCvStore.getState();
+            expect(state.experience).toHaveLength(1);
+            expect(state.experience[0].title).toBe('Senior Software Engineer');
+            expect(state.experience[0].description).toBe('Built better things');
+        });
+
+        it('should update an education item by ID', () => {
+            const store = useCvStore.getState();
+            
+            const education: Education = {
+                id: 'edu-1',
+                title: 'BS Computer Science',
+                school: 'University',
+                location: 'Boston',
+                startDate: '2016-09',
+                endDate: '2020-05'
+            };
+            store.setArrData('education', education);
+
+            const updatedEducation: Education = {
+                id: 'edu-1',
+                title: 'BS Computer Science (Honors)',
+                school: 'University',
+                location: 'Boston',
+                startDate: '2016-09',
+                endDate: '2020-05'
+            };
+            store.updateArrItem('education', 'edu-1', updatedEducation);
+
+            const state = useCvStore.getState();
+            expect(state.education[0].title).toBe('BS Computer Science (Honors)');
+        });
+
+        it('should not affect other items when updating', () => {
+            const store = useCvStore.getState();
+            
+            const exp1: Experience = {
+                id: 'exp-1',
+                title: 'Engineer 1',
+                company: 'Company 1',
+                location: 'City 1',
+                startDate: '2020-01',
+                endDate: '2021-01',
+                description: 'Desc 1'
+            };
+            const exp2: Experience = {
+                id: 'exp-2',
+                title: 'Engineer 2',
+                company: 'Company 2',
+                location: 'City 2',
+                startDate: '2021-01',
+                endDate: '2022-01',
+                description: 'Desc 2'
+            };
+            
+            store.setArrData('experience', exp1);
+            store.setArrData('experience', exp2);
+
+            const updatedExp1: Experience = {
+                ...exp1,
+                title: 'Updated Engineer 1'
+            };
+            store.updateArrItem('experience', 'exp-1', updatedExp1);
+
+            const state = useCvStore.getState();
+            expect(state.experience).toHaveLength(2);
+            expect(state.experience[0].title).toBe('Updated Engineer 1');
+            expect(state.experience[1].title).toBe('Engineer 2');
+        });
+    });
+
+    describe('deleteArrItem', () => {
+        it('should delete an experience item by ID', () => {
+            const store = useCvStore.getState();
+            
+            const experience: Experience = {
+                id: 'test-id-1',
+                title: 'Software Engineer',
+                company: 'Tech Corp',
+                location: 'San Francisco',
+                startDate: '2020-01',
+                endDate: '2023-01',
+                description: 'Built things'
+            };
+            store.setArrData('experience', experience);
+
+            expect(useCvStore.getState().experience).toHaveLength(1);
+
+            store.deleteArrItem('experience', 'test-id-1');
+
+            expect(useCvStore.getState().experience).toHaveLength(0);
+        });
+
+        it('should delete an education item by ID', () => {
+            const store = useCvStore.getState();
+            
+            const education: Education = {
+                id: 'edu-1',
+                title: 'BS Computer Science',
+                school: 'University',
+                location: 'Boston',
+                startDate: '2016-09',
+                endDate: '2020-05'
+            };
+            store.setArrData('education', education);
+
+            store.deleteArrItem('education', 'edu-1');
+
+            expect(useCvStore.getState().education).toHaveLength(0);
+        });
+
+        it('should delete a project item by ID', () => {
+            const store = useCvStore.getState();
+            
+            const project: Projects = {
+                id: 'proj-1',
+                name: 'My Project',
+                url: 'https://example.com'
+            };
+            store.setArrData('projects', project);
+
+            store.deleteArrItem('projects', 'proj-1');
+
+            expect(useCvStore.getState().projects).toHaveLength(0);
+        });
+
+        it('should not affect other items when deleting', () => {
+            const store = useCvStore.getState();
+            
+            const exp1: Experience = {
+                id: 'exp-1',
+                title: 'Engineer 1',
+                company: 'Company 1',
+                location: 'City 1',
+                startDate: '2020-01',
+                endDate: '2021-01',
+                description: 'Desc 1'
+            };
+            const exp2: Experience = {
+                id: 'exp-2',
+                title: 'Engineer 2',
+                company: 'Company 2',
+                location: 'City 2',
+                startDate: '2021-01',
+                endDate: '2022-01',
+                description: 'Desc 2'
+            };
+            
+            store.setArrData('experience', exp1);
+            store.setArrData('experience', exp2);
+
+            store.deleteArrItem('experience', 'exp-1');
+
+            const state = useCvStore.getState();
+            expect(state.experience).toHaveLength(1);
+            expect(state.experience[0].id).toBe('exp-2');
+        });
+
+        it('should handle deleting non-existent ID gracefully', () => {
+            const store = useCvStore.getState();
+            
+            const experience: Experience = {
+                id: 'test-id-1',
+                title: 'Software Engineer',
+                company: 'Tech Corp',
+                location: 'San Francisco',
+                startDate: '2020-01',
+                endDate: '2023-01',
+                description: 'Built things'
+            };
+            store.setArrData('experience', experience);
+
+            store.deleteArrItem('experience', 'non-existent-id');
+
+            expect(useCvStore.getState().experience).toHaveLength(1);
+        });
+    });
+
+    describe('clearAll', () => {
+        it('should reset all fields to default empty values', () => {
+            const store = useCvStore.getState();
+            
+            // Populate store with data
+            store.setBasic('name', 'John Doe');
+            store.setBasic('role', 'Developer');
+            store.setBasic('bio', 'A developer');
+            store.setContact('email', 'john@example.com');
+            store.setContact('phone', '123-456-7890');
+            
+            const experience: Experience = {
+                id: 'exp-1',
+                title: 'Engineer',
+                company: 'Company',
+                location: 'City',
+                startDate: '2020-01',
+                endDate: '2021-01',
+                description: 'Desc'
+            };
+            store.setArrData('experience', experience);
+            store.setArrData('skills', ['JavaScript', 'TypeScript']);
+
+            // Clear all
+            store.clearAll();
+
+            const state = useCvStore.getState();
+            expect(state.name).toBe('');
+            expect(state.role).toBe('');
+            expect(state.bio).toBe('');
+            expect(state.img).toBe('');
+            expect(state.contact.email).toBe('');
+            expect(state.contact.phone).toBe('');
+            expect(state.contact.website).toBe('');
+            expect(state.contact.github).toBe('');
+            expect(state.contact.linkedin).toBe('');
+            expect(state.contact.twitter).toBe('');
+            expect(state.experience).toEqual([]);
+            expect(state.education).toEqual([]);
+            expect(state.skills).toEqual([]);
+            expect(state.projects).toEqual([]);
+            expect(state.certifications).toEqual([]);
+            expect(state.languages).toEqual([]);
+        });
+    });
+
+    describe('exportData', () => {
+        it('should serialize store to JSON string', () => {
+            const store = useCvStore.getState();
+            
+            store.setBasic('name', 'John Doe');
+            store.setBasic('role', 'Developer');
+            store.setContact('email', 'john@example.com');
+            
+            const experience: Experience = {
+                id: 'exp-1',
+                title: 'Engineer',
+                company: 'Company',
+                location: 'City',
+                startDate: '2020-01',
+                endDate: '2021-01',
+                description: 'Desc'
+            };
+            store.setArrData('experience', experience);
+
+            const jsonString = store.exportData();
+            const parsed = JSON.parse(jsonString);
+
+            expect(parsed.name).toBe('John Doe');
+            expect(parsed.role).toBe('Developer');
+            expect(parsed.contact.email).toBe('john@example.com');
+            expect(parsed.experience).toHaveLength(1);
+            expect(parsed.experience[0].title).toBe('Engineer');
+        });
+
+        it('should export empty store correctly', () => {
+            const store = useCvStore.getState();
+            store.clearAll();
+
+            const jsonString = store.exportData();
+            const parsed = JSON.parse(jsonString);
+
+            expect(parsed.name).toBe('');
+            expect(parsed.experience).toEqual([]);
+            expect(parsed.contact.email).toBe('');
+        });
+    });
+
+    describe('importData', () => {
+        it('should parse and load JSON data', () => {
+            const store = useCvStore.getState();
+            
+            const data = {
+                name: 'Jane Doe',
+                role: 'Designer',
+                bio: 'A designer',
+                img: '',
+                experience: [{
+                    id: 'exp-1',
+                    title: 'Designer',
+                    company: 'Design Co',
+                    location: 'NYC',
+                    startDate: '2019-01',
+                    endDate: '2022-01',
+                    description: 'Designed things'
+                }],
+                education: [],
+                skills: ['Figma', 'Sketch'],
+                projects: [],
+                certifications: [],
+                languages: [],
+                contact: {
+                    email: 'jane@example.com',
+                    phone: '987-654-3210',
+                    website: '',
+                    github: '',
+                    linkedin: '',
+                    twitter: ''
+                }
+            };
+
+            store.importData(JSON.stringify(data));
+
+            const state = useCvStore.getState();
+            expect(state.name).toBe('Jane Doe');
+            expect(state.role).toBe('Designer');
+            expect(state.bio).toBe('A designer');
+            expect(state.experience).toHaveLength(1);
+            expect(state.experience[0].title).toBe('Designer');
+            expect(state.skills).toEqual(['Figma', 'Sketch']);
+            expect(state.contact.email).toBe('jane@example.com');
+        });
+
+        it('should add IDs to items that are missing them', () => {
+            const store = useCvStore.getState();
+            
+            const data = {
+                name: 'Test',
+                role: '',
+                bio: '',
+                img: '',
+                experience: [{
+                    title: 'Engineer',
+                    company: 'Company',
+                    location: 'City',
+                    startDate: '2020-01',
+                    endDate: '2021-01',
+                    description: 'Desc'
+                }],
+                education: [],
+                skills: [],
+                projects: [],
+                certifications: [],
+                languages: [],
+                contact: {
+                    email: '',
+                    phone: '',
+                    website: '',
+                    github: '',
+                    linkedin: '',
+                    twitter: ''
+                }
+            };
+
+            store.importData(JSON.stringify(data));
+
+            const state = useCvStore.getState();
+            expect(state.experience[0].id).toBeDefined();
+            expect(typeof state.experience[0].id).toBe('string');
+        });
+
+        it('should throw error for invalid JSON', () => {
+            const store = useCvStore.getState();
+            
+            expect(() => {
+                store.importData('invalid json');
+            }).toThrow();
+        });
+
+        it('should throw error for non-object data', () => {
+            const store = useCvStore.getState();
+            
+            expect(() => {
+                store.importData('"just a string"');
+            }).toThrow();
+        });
+
+        it('should handle missing fields gracefully', () => {
+            const store = useCvStore.getState();
+            
+            const data = {
+                name: 'Test User'
+                // Missing other fields
+            };
+
+            store.importData(JSON.stringify(data));
+
+            const state = useCvStore.getState();
+            expect(state.name).toBe('Test User');
+            expect(state.role).toBe('');
+            expect(state.experience).toEqual([]);
+            expect(state.contact.email).toBe('');
+        });
+    });
+});
