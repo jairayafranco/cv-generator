@@ -15,11 +15,14 @@ import ConfirmDialog from "./ConfirmDialog"
 import { useEditModeContext } from "../contexts/EditModeContext"
 import { useState } from "react"
 import { urlBuilder } from "../utils/urlBuilder"
+import { useNotification } from "../hooks/useNotification"
+import { NotificationContainer } from "./NotificationContainer"
 
 export default function Preview() {
     const { img, name, role, bio, contact, experience, education, skills, projects, certifications, languages, deleteArrItem } = useCvStore();
     const { toPDF, targetRef } = usePDF({ filename: 'cv.pdf' });
     const { startEditExperience, startEditEducation, startEditProjects } = useEditModeContext();
+    const { notifications, showNotification, dismissNotification } = useNotification();
     
     // State for delete confirmation dialog
     const [deleteDialog, setDeleteDialog] = useState<{
@@ -92,10 +95,21 @@ export default function Preview() {
         setDeleteDialog({ isOpen: false, type: null, id: '', name: '' });
     };
 
+    // Handle PDF export with error handling
+    const handlePDFExport = async () => {
+        try {
+            await toPDF();
+            showNotification('success', 'CV exported to PDF successfully!');
+        } catch (error) {
+            console.error('PDF export error:', error);
+            showNotification('error', 'Failed to export CV to PDF. Please try again.');
+        }
+    };
+
     return (
         <div className="flex-1 py-5 px-4 bg-base-100 h-screen overflow-auto md:flex md:justify-center" ref={targetRef}>
             <div className="w-[700px] md:px-6 md:max-w-[900px] max-w-[100vw]">
-                <FloatingButton onClick={() => toPDF()} />
+                <FloatingButton onClick={handlePDFExport} />
                 <section className="flex items-center gap-6">
                     <div className="avatar">
                         <div className="w-40 rounded-full">
@@ -337,6 +351,12 @@ export default function Preview() {
                 onConfirm={handleDeleteConfirm}
                 onCancel={handleDeleteCancel}
                 type="error"
+            />
+
+            {/* Notification Container */}
+            <NotificationContainer 
+                notifications={notifications}
+                onDismiss={dismissNotification}
             />
         </div>
     );

@@ -186,25 +186,51 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                         aria-describedby={imageFile && validateImage(imageFile) ? "profile-image-error" : undefined}
                         aria-invalid={imageFile && validateImage(imageFile) ? "true" : "false"}
                         onChange={(e) => {
-                            const file = e.currentTarget.files?.[0];
-                            if (!file) {
+                            try {
+                                const file = e.currentTarget.files?.[0];
+                                if (!file) {
+                                    setImageFile(null);
+                                    return;
+                                }
+                                
+                                setImageFile(file);
+                                const validationError = validateImage(file);
+                                
+                                if (validationError) {
+                                    // Don't process invalid images
+                                    showNotification('error', validationError);
+                                    return;
+                                }
+                                
+                                const reader = new FileReader();
+                                
+                                reader.onloadend = () => {
+                                    try {
+                                        const result = reader.result as string;
+                                        if (!result) {
+                                            throw new Error('Failed to read image file');
+                                        }
+                                        setBasic("img", result);
+                                        showNotification('success', 'Image uploaded successfully!');
+                                    } catch (error) {
+                                        console.error('Image processing error:', error);
+                                        showNotification('error', 'Failed to process image. Please try again.');
+                                        setImageFile(null);
+                                    }
+                                };
+                                
+                                reader.onerror = () => {
+                                    console.error('FileReader error:', reader.error);
+                                    showNotification('error', 'Failed to read image file. Please try again.');
+                                    setImageFile(null);
+                                };
+                                
+                                reader.readAsDataURL(file);
+                            } catch (error) {
+                                console.error('Image upload error:', error);
+                                showNotification('error', 'Failed to upload image. Please try again.');
                                 setImageFile(null);
-                                return;
                             }
-                            
-                            setImageFile(file);
-                            const validationError = validateImage(file);
-                            
-                            if (validationError) {
-                                // Don't process invalid images
-                                return;
-                            }
-                            
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                                setBasic("img", reader.result as string);
-                            };
-                            reader.readAsDataURL(file);
                         }}
                     />
                     {imageFile && validateImage(imageFile) && (
