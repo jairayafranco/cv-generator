@@ -10,7 +10,7 @@ export interface ValidationRule {
   pattern?: RegExp;
   minLength?: number;
   maxLength?: number;
-  custom?: (value: unknown) => string | null;
+  custom?: (value: unknown, data?: Record<string, unknown>) => string | null;
 }
 
 export interface ValidationSchema {
@@ -180,7 +180,7 @@ export function useFormValidation(schema: ValidationSchema): UseFormValidationRe
 
       // Check custom validation
       if (rule.custom && !errorMessage) {
-        errorMessage = rule.custom(value);
+        errorMessage = rule.custom(value, data);
       }
 
       if (errorMessage) {
