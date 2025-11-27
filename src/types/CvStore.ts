@@ -15,6 +15,7 @@ type ArrData = {
 }
 
 export type Experience = {
+    id: string,
     title: string,
     company: string,
     location: string,
@@ -24,6 +25,7 @@ export type Experience = {
 };
 
 export type Education = {
+    id: string,
     title: string,
     school: string,
     location: string,
@@ -32,6 +34,7 @@ export type Education = {
 }
 
 export type Projects = {
+    id: string,
     name: string,
     url: string,
 }
@@ -50,6 +53,7 @@ export type CvStore = BasicData & ArrData & {
     setBasic: (name: setBasicName, value: string) => void,
     setContact: (name: keyof Contact, value: string) => void,
     setArrData: (name: setArrDataName, value: setArrDataValue) => void,
+    migrateData: () => void,
 };
 
 export type setBasicName = keyof BasicData;

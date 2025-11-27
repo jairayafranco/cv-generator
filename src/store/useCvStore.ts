@@ -1,6 +1,14 @@
 import { create } from "zustand";
 import type { Contact, CvStore, setArrDataName, setArrDataValue, setBasicName } from "../types/CvStore";
 
+// Migration helper to add IDs to existing data
+const addIdIfMissing = <T extends { id?: string }>(item: T): T & { id: string } => {
+    return {
+        ...item,
+        id: item.id || crypto.randomUUID()
+    };
+};
+
 export const useCvStore = create<CvStore>((set) => ({
     img: "",
     name: "",
@@ -33,8 +41,18 @@ export const useCvStore = create<CvStore>((set) => ({
             }
         }
 
+        // Add unique ID to Experience, Education, and Projects if not present
+        const valueWithId = typeof value === 'object' && !Array.isArray(value)
+            ? { ...value, id: value.id || crypto.randomUUID() }
+            : value;
+
         return {
-            [name]: [...state[name], value]
+            [name]: [...state[name], valueWithId]
         }
     }),
+    migrateData: () => set((state) => ({
+        experience: state.experience.map(addIdIfMissing),
+        education: state.education.map(addIdIfMissing),
+        projects: state.projects.map(addIdIfMissing),
+    })),
 }));
