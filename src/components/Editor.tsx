@@ -1,14 +1,81 @@
 import { useCvStore } from "../store/useCvStore";
 import type { Contact, Education, Experience, Projects } from "../types/CvStore";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getFormData, socialNetworks, splitByComma } from "../utils";
 import { useFormValidation, type ValidationSchema } from "../hooks/useFormValidation";
 import { validateEmail, validateUrl, validateDateRange, validateImage } from "../utils/validation";
 
-export default function Editor() {
+interface UseEditModeReturn<T> {
+  isEditing: boolean;
+  editingId: string | null;
+  editData: T | null;
+  startEdit: (id: string, data: T) => void;
+  cancelEdit: () => void;
+  saveEdit: (data: T) => void;
+}
+
+interface EditorProps {
+    experienceEditMode: UseEditModeReturn<Experience>;
+    educationEditMode: UseEditModeReturn<Education>;
+    projectsEditMode: UseEditModeReturn<Projects>;
+}
+
+export default function Editor({ experienceEditMode, educationEditMode, projectsEditMode }: EditorProps) {
     const { name, role, bio, contact, setBasic, setContact, setArrData } = useCvStore();
     const [currently, setCurrently] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
+
+    // Form refs for resetting
+    const experienceFormRef = useRef<HTMLFormElement>(null);
+    const educationFormRef = useRef<HTMLFormElement>(null);
+    const projectsFormRef = useRef<HTMLFormElement>(null);
+
+    // Populate experience form when editing
+    useEffect(() => {
+        if (experienceEditMode.isEditing && experienceEditMode.editData && experienceFormRef.current) {
+            const form = experienceFormRef.current;
+            const data = experienceEditMode.editData;
+            
+            (form.elements.namedItem('title') as HTMLInputElement).value = data.title;
+            (form.elements.namedItem('company') as HTMLInputElement).value = data.company;
+            (form.elements.namedItem('location') as HTMLInputElement).value = data.location;
+            (form.elements.namedItem('startDate') as HTMLInputElement).value = data.startDate;
+            (form.elements.namedItem('description') as HTMLTextAreaElement).value = data.description;
+            
+            if (data.endDate === 'Currently') {
+                setCurrently(true);
+                (form.elements.namedItem('endDate') as HTMLInputElement).value = '';
+            } else {
+                setCurrently(false);
+                (form.elements.namedItem('endDate') as HTMLInputElement).value = data.endDate;
+            }
+        }
+    }, [experienceEditMode.isEditing, experienceEditMode.editData]);
+
+    // Populate education form when editing
+    useEffect(() => {
+        if (educationEditMode.isEditing && educationEditMode.editData && educationFormRef.current) {
+            const form = educationFormRef.current;
+            const data = educationEditMode.editData;
+            
+            (form.elements.namedItem('title') as HTMLInputElement).value = data.title;
+            (form.elements.namedItem('school') as HTMLInputElement).value = data.school;
+            (form.elements.namedItem('location') as HTMLInputElement).value = data.location;
+            (form.elements.namedItem('startDate') as HTMLInputElement).value = data.startDate;
+            (form.elements.namedItem('endDate') as HTMLInputElement).value = data.endDate;
+        }
+    }, [educationEditMode.isEditing, educationEditMode.editData]);
+
+    // Populate projects form when editing
+    useEffect(() => {
+        if (projectsEditMode.isEditing && projectsEditMode.editData && projectsFormRef.current) {
+            const form = projectsFormRef.current;
+            const data = projectsEditMode.editData;
+            
+            (form.elements.namedItem('name') as HTMLInputElement).value = data.name;
+            (form.elements.namedItem('url') as HTMLInputElement).value = data.url;
+        }
+    }, [projectsEditMode.isEditing, projectsEditMode.editData]);
 
     // Validation schemas for each form section
     const basicInfoSchema: ValidationSchema = {
@@ -235,7 +302,7 @@ export default function Editor() {
             <section className="mt-4">
                 <h1 className="text-3xl font-bold">Experience</h1>
 
-                <form onSubmit={(e) => {
+                <form ref={experienceFormRef} onSubmit={(e) => {
                     e.preventDefault();
                     const data = getFormData(e);
 
@@ -249,7 +316,14 @@ export default function Editor() {
                         return; // Prevent submission if validation fails
                     }
 
-                    setArrData("experience", data as Experience);
+                    if (experienceEditMode.isEditing) {
+                        // Update existing item
+                        experienceEditMode.saveEdit(data as Experience);
+                    } else {
+                        // Add new item
+                        setArrData("experience", data as Experience);
+                    }
+                    
                     e.currentTarget.reset();
                     experienceValidation.clearAllErrors();
                     setCurrently(false);
@@ -376,9 +450,25 @@ export default function Editor() {
                         />
                     </div>
 
-                    <button className="btn btn-sm btn-primary mt-4">
-                        Add Experience
-                    </button>
+                    <div className="flex gap-2 mt-4">
+                        <button type="submit" className="btn btn-sm btn-primary">
+                            {experienceEditMode.isEditing ? 'Update Experience' : 'Add Experience'}
+                        </button>
+                        {experienceEditMode.isEditing && (
+                            <button 
+                                type="button" 
+                                className="btn btn-sm btn-ghost"
+                                onClick={() => {
+                                    experienceEditMode.cancelEdit();
+                                    experienceFormRef.current?.reset();
+                                    experienceValidation.clearAllErrors();
+                                    setCurrently(false);
+                                }}
+                            >
+                                Cancel
+                            </button>
+                        )}
+                    </div>
                 </form>
             </section>
 
@@ -387,7 +477,7 @@ export default function Editor() {
             <section className="mt-4">
                 <h1 className="text-3xl font-bold">Education</h1>
 
-                <form onSubmit={(e) => {
+                <form ref={educationFormRef} onSubmit={(e) => {
                     e.preventDefault();
                     const data = getFormData(e);
                     
@@ -397,7 +487,14 @@ export default function Editor() {
                         return; // Prevent submission if validation fails
                     }
 
-                    setArrData("education", data as Education);
+                    if (educationEditMode.isEditing) {
+                        // Update existing item
+                        educationEditMode.saveEdit(data as Education);
+                    } else {
+                        // Add new item
+                        setArrData("education", data as Education);
+                    }
+                    
                     e.currentTarget.reset();
                     educationValidation.clearAllErrors();
                 }}>
@@ -494,9 +591,24 @@ export default function Editor() {
                         </div>
                     </div>
 
-                    <button className="btn btn-sm btn-primary mt-4">
-                        Add Education
-                    </button>
+                    <div className="flex gap-2 mt-4">
+                        <button type="submit" className="btn btn-sm btn-primary">
+                            {educationEditMode.isEditing ? 'Update Education' : 'Add Education'}
+                        </button>
+                        {educationEditMode.isEditing && (
+                            <button 
+                                type="button" 
+                                className="btn btn-sm btn-ghost"
+                                onClick={() => {
+                                    educationEditMode.cancelEdit();
+                                    educationFormRef.current?.reset();
+                                    educationValidation.clearAllErrors();
+                                }}
+                            >
+                                Cancel
+                            </button>
+                        )}
+                    </div>
                 </form>
             </section>
 
@@ -547,7 +659,7 @@ export default function Editor() {
             <section className="mt-4">
                 <h1 className="text-3xl font-bold">Projects</h1>
 
-                <form onSubmit={(e) => {
+                <form ref={projectsFormRef} onSubmit={(e) => {
                     e.preventDefault();
                     const data = getFormData(e);
                     
@@ -557,7 +669,14 @@ export default function Editor() {
                         return; // Prevent submission if validation fails
                     }
 
-                    setArrData("projects", data as Projects);
+                    if (projectsEditMode.isEditing) {
+                        // Update existing item
+                        projectsEditMode.saveEdit(data as Projects);
+                    } else {
+                        // Add new item
+                        setArrData("projects", data as Projects);
+                    }
+                    
                     e.currentTarget.reset();
                     projectsValidation.clearAllErrors();
                 }}>
@@ -597,9 +716,24 @@ export default function Editor() {
                             )}
                         </div>
                     </div>
-                    <button className="btn btn-sm btn-primary mt-4">
-                        Add Projects
-                    </button>
+                    <div className="flex gap-2 mt-4">
+                        <button type="submit" className="btn btn-sm btn-primary">
+                            {projectsEditMode.isEditing ? 'Update Project' : 'Add Project'}
+                        </button>
+                        {projectsEditMode.isEditing && (
+                            <button 
+                                type="button" 
+                                className="btn btn-sm btn-ghost"
+                                onClick={() => {
+                                    projectsEditMode.cancelEdit();
+                                    projectsFormRef.current?.reset();
+                                    projectsValidation.clearAllErrors();
+                                }}
+                            >
+                                Cancel
+                            </button>
+                        )}
+                    </div>
                 </form>
             </section>
 
