@@ -64,3 +64,13 @@ export type CvStore = BasicData & ArrData & {
 export type setBasicName = keyof BasicData;
 export type setArrDataName = keyof ArrData;
 export type setArrDataValue = Experience | Education | string[] | Projects;
+
+// Notification types
+export type NotificationType = 'success' | 'error' | 'warning' | 'info';
+
+export type Notification = {
+    id: string;
+    type: NotificationType;
+    message: string;
+    duration?: number;
+};
