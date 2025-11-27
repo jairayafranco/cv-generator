@@ -14,6 +14,7 @@ import EditableItem from "./EditableItem"
 import ConfirmDialog from "./ConfirmDialog"
 import { useEditModeContext } from "../contexts/EditModeContext"
 import { useState } from "react"
+import { urlBuilder } from "../utils/urlBuilder"
 
 export default function Preview() {
     const { img, name, role, bio, contact, experience, education, skills, projects, certifications, languages, deleteArrItem } = useCvStore();
@@ -108,32 +109,32 @@ export default function Preview() {
                         <div className="text-lg mt-2">
                             {
                                 bio.length > 0
-                                    ? bio.split("\n").map((p, idx) => <p key={idx}>{p.charAt(0).toUpperCase() + bio.slice(1)}</p>)
+                                    ? bio.split("\n").map((p, idx) => <p key={idx}>{p.charAt(0).toUpperCase() + p.slice(1)}</p>)
                                     : "Your Bio"
                             }
                         </div>
 
                         <div className="flex flex-wrap gap-2 mt-2">
                             {contact.website && (
-                                <a href="" target="_blank" className="flex gap-1 badge badge-primary">
+                                <a href={urlBuilder.website(contact.website)} target="_blank" rel="noopener noreferrer" className="flex gap-1 badge badge-primary">
                                     <TbWorldWww />
                                     {contact.website}
                                 </a>
                             )}
                             {contact.linkedin && (
-                                <a href="" target="_blank" className="flex gap-1 badge badge-primary">
+                                <a href={urlBuilder.linkedin(contact.linkedin)} target="_blank" rel="noopener noreferrer" className="flex gap-1 badge badge-primary">
                                     <BsLinkedin />
                                     {contact.linkedin}
                                 </a>
                             )}
                             {contact.github && (
-                                <a href="" target="_blank" className="flex gap-1 badge badge-primary">
+                                <a href={urlBuilder.github(contact.github)} target="_blank" rel="noopener noreferrer" className="flex gap-1 badge badge-primary">
                                     <BsGithub />
                                     {contact.github}
                                 </a>
                             )}
                             {contact.twitter && (
-                                <a href="" target="_blank" className="flex gap-1 badge badge-primary">
+                                <a href={urlBuilder.twitter(contact.twitter)} target="_blank" rel="noopener noreferrer" className="flex gap-1 badge badge-primary">
                                     <RiTwitterXFill />
                                     {contact.twitter}
                                 </a>
@@ -141,13 +142,13 @@ export default function Preview() {
                         </div>
                         <div className="flex flex-wrap gap-2 mt-2">
                             {contact.email && (
-                                <a href="" target="_blank" className="flex gap-1 badge badge-primary">
+                                <a href={urlBuilder.email(contact.email)} className="flex gap-1 badge badge-primary">
                                     <MdEmail />
                                     {contact.email}
                                 </a>
                             )}
                             {contact.phone && (
-                                <a href="" target="_blank" className="flex gap-1 badge badge-primary">
+                                <a href={urlBuilder.phone(contact.phone)} className="flex gap-1 badge badge-primary">
                                     <AiFillPhone />
                                     {contact.phone}
                                 </a>
@@ -265,7 +266,7 @@ export default function Preview() {
                                     onDelete={(id) => handleDeleteClick('project', id, project.name)}
                                 >
                                     <li>
-                                        <a href={project.url} target="_blank" className="capitalize">{project.name}</a>
+                                        <a href={urlBuilder.website(project.url)} target="_blank" rel="noopener noreferrer" className="capitalize">{project.name}</a>
                                     </li>
                                 </EditableItem>
                             ))}
