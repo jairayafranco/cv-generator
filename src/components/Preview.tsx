@@ -9,11 +9,87 @@ import { HiMiniLanguage } from "react-icons/hi2"
 import { MdEmail } from "react-icons/md"
 import { useCvStore } from "../store/useCvStore"
 import FloatingButton from "./FloatingButton"
-import { usePDF } from 'react-to-pdf';
+import { usePDF } from 'react-to-pdf'
+import EditableItem from "./EditableItem"
+import ConfirmDialog from "./ConfirmDialog"
+import { useEditModeContext } from "../contexts/EditModeContext"
+import { useState } from "react"
 
 export default function Preview() {
-    const { img, name, role, bio, contact, experience, education, skills, projects, certifications, languages } = useCvStore();
+    const { img, name, role, bio, contact, experience, education, skills, projects, certifications, languages, deleteArrItem } = useCvStore();
     const { toPDF, targetRef } = usePDF({ filename: 'cv.pdf' });
+    const { startEditExperience, startEditEducation, startEditProjects } = useEditModeContext();
+    
+    // State for delete confirmation dialog
+    const [deleteDialog, setDeleteDialog] = useState<{
+        isOpen: boolean;
+        type: 'experience' | 'education' | 'project' | 'skill' | 'certification' | 'language' | null;
+        id: string;
+        name: string;
+    }>({
+        isOpen: false,
+        type: null,
+        id: '',
+        name: ''
+    });
+
+    // Scroll to editor when edit is clicked
+    const scrollToEditor = () => {
+        const editorElement = document.querySelector('.flex-1.p-4.mb-5.overflow-auto');
+        if (editorElement) {
+            editorElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
+
+    // Handle edit actions
+    const handleEditExperience = (id: string) => {
+        const item = experience.find(exp => exp.id === id);
+        if (item) {
+            startEditExperience(id, item);
+            scrollToEditor();
+        }
+    };
+
+    const handleEditEducation = (id: string) => {
+        const item = education.find(edu => edu.id === id);
+        if (item) {
+            startEditEducation(id, item);
+            scrollToEditor();
+        }
+    };
+
+    const handleEditProject = (id: string) => {
+        const item = projects.find(proj => proj.id === id);
+        if (item) {
+            startEditProjects(id, item);
+            scrollToEditor();
+        }
+    };
+
+    // Handle delete actions
+    const handleDeleteClick = (
+        type: 'experience' | 'education' | 'project' | 'skill' | 'certification' | 'language',
+        id: string,
+        itemName: string
+    ) => {
+        setDeleteDialog({
+            isOpen: true,
+            type,
+            id,
+            name: itemName
+        });
+    };
+
+    const handleDeleteConfirm = () => {
+        if (deleteDialog.type && deleteDialog.id) {
+            deleteArrItem(deleteDialog.type === 'project' ? 'projects' : deleteDialog.type === 'skill' ? 'skills' : deleteDialog.type === 'certification' ? 'certifications' : deleteDialog.type === 'language' ? 'languages' : deleteDialog.type, deleteDialog.id);
+        }
+        setDeleteDialog({ isOpen: false, type: null, id: '', name: '' });
+    };
+
+    const handleDeleteCancel = () => {
+        setDeleteDialog({ isOpen: false, type: null, id: '', name: '' });
+    };
 
     return (
         <div className="flex-1 py-5 px-4 bg-base-100 h-screen overflow-auto md:flex md:justify-center" ref={targetRef}>
@@ -86,18 +162,30 @@ export default function Preview() {
                         <BsFillStarFill color="#F59E0B" />
                     </h2>
 
-                    <ul className="steps steps-vertical">
-                        {experience.map((exp, idx) => (
-                            <li key={idx} className="step step-primary py-2" data-content="">
-                                <div className="flex flex-col w-full text-left capitalize">
-                                    <h3 className="text-xl font-bold">{exp.title} at {exp.company}</h3>
-                                    <span className="text-gray-500">{exp.startDate} - {exp.endDate}</span>
-                                    <p className="text-gray-400 ca">{exp.location}</p>
-                                    <p className="text-lg">{exp.description}</p>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+                    {experience.length === 0 ? (
+                        <p className="text-gray-500 mt-4 italic">No experience added yet. Add your work experience in the editor.</p>
+                    ) : (
+                        <ul className="steps steps-vertical">
+                            {experience.map((exp) => (
+                                <li key={exp.id} className="step step-primary py-2" data-content="">
+                                    <EditableItem
+                                        type="experience"
+                                        data={exp}
+                                        id={exp.id}
+                                        onEdit={handleEditExperience}
+                                        onDelete={(id) => handleDeleteClick('experience', id, `${exp.title} at ${exp.company}`)}
+                                    >
+                                        <div className="flex flex-col w-full text-left capitalize">
+                                            <h3 className="text-xl font-bold">{exp.title} at {exp.company}</h3>
+                                            <span className="text-gray-500">{exp.startDate} - {exp.endDate}</span>
+                                            <p className="text-gray-400 ca">{exp.location}</p>
+                                            <p className="text-lg">{exp.description}</p>
+                                        </div>
+                                    </EditableItem>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </section>
 
                 <section className="mt-8">
@@ -106,17 +194,29 @@ export default function Preview() {
                         <BiSolidBookBookmark color="#3ABAB4" />
                     </h2>
 
-                    <ul className="steps steps-vertical">
-                        {education.map((edu, idx) => (
-                            <li key={idx} className="step step-primary py-2" data-content="">
-                                <div className="flex flex-col w-full text-left">
-                                    <h3 className="text-xl font-bold">{edu.title}</h3>
-                                    <span className="text-gray-500">{edu.startDate} - {edu.endDate}</span>
-                                    <p className="text-gray-400">{edu.school} - {edu.location}</p>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+                    {education.length === 0 ? (
+                        <p className="text-gray-500 mt-4 italic">No education added yet. Add your education in the editor.</p>
+                    ) : (
+                        <ul className="steps steps-vertical">
+                            {education.map((edu) => (
+                                <li key={edu.id} className="step step-primary py-2" data-content="">
+                                    <EditableItem
+                                        type="education"
+                                        data={edu}
+                                        id={edu.id}
+                                        onEdit={handleEditEducation}
+                                        onDelete={(id) => handleDeleteClick('education', id, `${edu.title} at ${edu.school}`)}
+                                    >
+                                        <div className="flex flex-col w-full text-left">
+                                            <h3 className="text-xl font-bold">{edu.title}</h3>
+                                            <span className="text-gray-500">{edu.startDate} - {edu.endDate}</span>
+                                            <p className="text-gray-400">{edu.school} - {edu.location}</p>
+                                        </div>
+                                    </EditableItem>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </section>
 
                 <section className="mt-8">
@@ -125,11 +225,24 @@ export default function Preview() {
                         <AiFillCheckCircle color="#10B981" />
                     </h2>
 
-                    <ul className="list-disc ml-6 mt-2 grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
-                        {skills.map((skill, idx) => (
-                            <li key={idx} className="capitalize">{skill}</li>
-                        ))}
-                    </ul>
+                    {skills.length === 0 ? (
+                        <p className="text-gray-500 mt-4 italic">No skills added yet. Add your skills in the editor.</p>
+                    ) : (
+                        <ul className="list-disc ml-6 mt-2 grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
+                            {skills.map((skill, idx) => (
+                                <EditableItem
+                                    key={idx}
+                                    type="skill"
+                                    data={skill}
+                                    id={idx.toString()}
+                                    onEdit={() => {}}
+                                    onDelete={(id) => handleDeleteClick('skill', id, skill)}
+                                >
+                                    <li className="capitalize">{skill}</li>
+                                </EditableItem>
+                            ))}
+                        </ul>
+                    )}
                 </section>
 
                 <section className="mt-8">
@@ -138,14 +251,26 @@ export default function Preview() {
                         <FcOpenedFolder />
                     </h2>
 
-                    <ul className="list-disc ml-6 mt-2 grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
-                        {projects.map((project, idx) => (
-                            <li key={idx}>
-                                <a href={project.url} target="_blank" className="capitalize">{project.name}</a>
-                            </li>
-                        ))}
-
-                    </ul>
+                    {projects.length === 0 ? (
+                        <p className="text-gray-500 mt-4 italic">No projects added yet. Add your projects in the editor.</p>
+                    ) : (
+                        <ul className="list-disc ml-6 mt-2 grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
+                            {projects.map((project) => (
+                                <EditableItem
+                                    key={project.id}
+                                    type="project"
+                                    data={project}
+                                    id={project.id}
+                                    onEdit={handleEditProject}
+                                    onDelete={(id) => handleDeleteClick('project', id, project.name)}
+                                >
+                                    <li>
+                                        <a href={project.url} target="_blank" className="capitalize">{project.name}</a>
+                                    </li>
+                                </EditableItem>
+                            ))}
+                        </ul>
+                    )}
                 </section>
 
                 <section className="mt-8">
@@ -154,11 +279,24 @@ export default function Preview() {
                         <PiCertificateFill color="#F54E0B" />
                     </h2>
 
-                    <ul className="list-disc mt-2 mx-6 mb-10 grid gap-2 md:grid-cols-3 lg:grid-cols-4">
-                        {certifications.map((cert, idx) => (
-                            <li key={idx} className="capitalize">{cert}</li>
-                        ))}
-                    </ul>
+                    {certifications.length === 0 ? (
+                        <p className="text-gray-500 mt-4 italic">No certifications added yet. Add your certifications in the editor.</p>
+                    ) : (
+                        <ul className="list-disc mt-2 mx-6 mb-10 grid gap-2 md:grid-cols-3 lg:grid-cols-4">
+                            {certifications.map((cert, idx) => (
+                                <EditableItem
+                                    key={idx}
+                                    type="certification"
+                                    data={cert}
+                                    id={idx.toString()}
+                                    onEdit={() => {}}
+                                    onDelete={(id) => handleDeleteClick('certification', id, cert)}
+                                >
+                                    <li className="capitalize">{cert}</li>
+                                </EditableItem>
+                            ))}
+                        </ul>
+                    )}
                 </section>
 
                 <section className="mt-8 pb-1">
@@ -167,13 +305,38 @@ export default function Preview() {
                         <HiMiniLanguage color="#f2b43f" />
                     </h2>
 
-                    <ul className="list-disc mt-2 mx-6 mb-10 grid gap-2 md:grid-cols-3 lg:grid-cols-4">
-                        {languages.map((lang, idx) => (
-                            <li key={idx} className="capitalize">{lang}</li>
-                        ))}
-                    </ul>
+                    {languages.length === 0 ? (
+                        <p className="text-gray-500 mt-4 italic">No languages added yet. Add your languages in the editor.</p>
+                    ) : (
+                        <ul className="list-disc mt-2 mx-6 mb-10 grid gap-2 md:grid-cols-3 lg:grid-cols-4">
+                            {languages.map((lang, idx) => (
+                                <EditableItem
+                                    key={idx}
+                                    type="language"
+                                    data={lang}
+                                    id={idx.toString()}
+                                    onEdit={() => {}}
+                                    onDelete={(id) => handleDeleteClick('language', id, lang)}
+                                >
+                                    <li className="capitalize">{lang}</li>
+                                </EditableItem>
+                            ))}
+                        </ul>
+                    )}
                 </section>
             </div>
+
+            {/* Delete Confirmation Dialog */}
+            <ConfirmDialog
+                isOpen={deleteDialog.isOpen}
+                title="Delete Item"
+                message={`Are you sure you want to delete "${deleteDialog.name}"? This action cannot be undone.`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                onConfirm={handleDeleteConfirm}
+                onCancel={handleDeleteCancel}
+                type="error"
+            />
         </div>
     );
 }
