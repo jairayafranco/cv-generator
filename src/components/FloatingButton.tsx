@@ -8,8 +8,9 @@ export default function FloatingButton(props: ComponentProps<"button">) {
                 <button
                     {...props}
                     type="button"
+                    aria-label="Download CV as PDF"
                     className="flex items-center justify-center text-white rounded-full w-14 h-14 btn btn-primary dark:hover:bg-purple-700 focus:ring-4 focus:ring-blue-300 focus:outline-none dark:purple:ring-blue-800">
-                    <AiOutlineDownload className="w-12 h-12" />
+                    <AiOutlineDownload className="w-12 h-12" aria-hidden="true" />
                 </button>
             </div>
         </div>

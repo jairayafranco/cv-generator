@@ -176,12 +176,15 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                 <h1 className="text-3xl font-bold">Basic Info</h1>
 
                 <div className="form-control w-full max-w-sm mt-4">
-                    <label className="label">
+                    <label className="label" htmlFor="profile-image">
                         <span className="label-text">Profile Image</span>
                     </label>
                     <input
+                        id="profile-image"
                         type="file"
                         className={`file-input file-input-bordered file-input-primary file-input-sm w-full ${imageFile && validateImage(imageFile) ? 'file-input-error' : ''}`}
+                        aria-describedby={imageFile && validateImage(imageFile) ? "profile-image-error" : undefined}
+                        aria-invalid={imageFile && validateImage(imageFile) ? "true" : "false"}
                         onChange={(e) => {
                             const file = e.currentTarget.files?.[0];
                             if (!file) {
@@ -206,21 +209,25 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                     />
                     {imageFile && validateImage(imageFile) && (
                         <label className="label">
-                            <span className="label-text-alt text-error">{validateImage(imageFile)}</span>
+                            <span id="profile-image-error" className="label-text-alt text-error" role="alert">{validateImage(imageFile)}</span>
                         </label>
                     )}
                 </div>
 
                 <div className="flex gap-4 mt-2">
                     <div className="form-control w-full max-w-sm">
-                        <label className="label">
+                        <label className="label" htmlFor="name-input">
                             <span className="label-text">Name <span className="text-error">*</span></span>
                         </label>
                         <input
+                            id="name-input"
                             type="text"
                             placeholder="Your name"
                             className={`input input-bordered w-full ${basicInfoValidation.errors.name ? 'input-error' : ''}`}
                             value={name}
+                            aria-required="true"
+                            aria-invalid={basicInfoValidation.errors.name ? "true" : "false"}
+                            aria-describedby={basicInfoValidation.errors.name ? "name-error" : undefined}
                             onChange={(e) => {
                                 setBasic("name", e.currentTarget.value);
                                 basicInfoValidation.validate("name", e.currentTarget.value);
@@ -229,19 +236,23 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                         />
                         {basicInfoValidation.errors.name && (
                             <label className="label">
-                                <span className="label-text-alt text-error">{basicInfoValidation.errors.name}</span>
+                                <span id="name-error" className="label-text-alt text-error" role="alert">{basicInfoValidation.errors.name}</span>
                             </label>
                         )}
                     </div>
                     <div className="form-control w-full max-w-sm">
-                        <label className="label">
+                        <label className="label" htmlFor="role-input">
                             <span className="label-text">Role <span className="text-error">*</span></span>
                         </label>
                         <input
+                            id="role-input"
                             type="text"
                             placeholder="Your role"
                             className={`input input-bordered w-full ${basicInfoValidation.errors.role ? 'input-error' : ''}`}
                             value={role}
+                            aria-required="true"
+                            aria-invalid={basicInfoValidation.errors.role ? "true" : "false"}
+                            aria-describedby={basicInfoValidation.errors.role ? "role-error" : undefined}
                             onChange={(e) => {
                                 setBasic("role", e.currentTarget.value);
                                 basicInfoValidation.validate("role", e.currentTarget.value);
@@ -250,16 +261,17 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                         />
                         {basicInfoValidation.errors.role && (
                             <label className="label">
-                                <span className="label-text-alt text-error">{basicInfoValidation.errors.role}</span>
+                                <span id="role-error" className="label-text-alt text-error" role="alert">{basicInfoValidation.errors.role}</span>
                             </label>
                         )}
                     </div>
                 </div>
                 <div className="form-control w-full mt-2">
-                    <label className="label">
+                    <label className="label" htmlFor="bio-input">
                         <span className="label-text">Bio</span>
                     </label>
                     <textarea
+                        id="bio-input"
                         className="textarea textarea-bordered w-full"
                         placeholder="Your bio"
                         value={bio}
@@ -276,18 +288,24 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                     {socialNetworks.map((socialNetwork) => {
                         const fieldName = socialNetwork.name as keyof Contact;
                         const isRequired = fieldName === 'email';
+                        const inputId = `contact-${fieldName}`;
+                        const errorId = `${inputId}-error`;
                         return (
                             <div key={socialNetwork.name} className="form-control w-full">
-                                <label className="label">
+                                <label className="label" htmlFor={inputId}>
                                     <span className="label-text">
                                         {socialNetwork.label} {isRequired && <span className="text-error">*</span>}
                                     </span>
                                 </label>
                                 <input
+                                    id={inputId}
                                     type="text"
                                     placeholder={socialNetwork.label}
                                     className={`input input-bordered w-full ${contactValidation.errors[fieldName] ? 'input-error' : ''}`}
                                     value={contact[fieldName]}
+                                    aria-required={isRequired ? "true" : "false"}
+                                    aria-invalid={contactValidation.errors[fieldName] ? "true" : "false"}
+                                    aria-describedby={contactValidation.errors[fieldName] ? errorId : undefined}
                                     onChange={(e) => {
                                         setContact(fieldName, e.currentTarget.value);
                                         contactValidation.validate(fieldName, e.currentTarget.value);
@@ -296,7 +314,7 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                                 />
                                 {contactValidation.errors[fieldName] && (
                                     <label className="label">
-                                        <span className="label-text-alt text-error">{contactValidation.errors[fieldName]}</span>
+                                        <span id={errorId} className="label-text-alt text-error" role="alert">{contactValidation.errors[fieldName]}</span>
                                     </label>
                                 )}
                             </div>
@@ -338,53 +356,65 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                 }}>
                     <div className="flex gap-4 mt-4">
                         <div className="form-control w-full max-w-xs">
-                            <label className="label">
+                            <label className="label" htmlFor="exp-title">
                                 <span className="label-text">Title <span className="text-error">*</span></span>
                             </label>
                             <input
+                                id="exp-title"
                                 name="title"
                                 type="text"
                                 placeholder="Your title"
                                 className={`input input-bordered w-full ${experienceValidation.errors.title ? 'input-error' : ''}`}
+                                aria-required="true"
+                                aria-invalid={experienceValidation.errors.title ? "true" : "false"}
+                                aria-describedby={experienceValidation.errors.title ? "exp-title-error" : undefined}
                                 onChange={(e) => experienceValidation.validate("title", e.currentTarget.value)}
                             />
                             {experienceValidation.errors.title && (
                                 <label className="label">
-                                    <span className="label-text-alt text-error">{experienceValidation.errors.title}</span>
+                                    <span id="exp-title-error" className="label-text-alt text-error" role="alert">{experienceValidation.errors.title}</span>
                                 </label>
                             )}
                         </div>
                         <div className="form-control w-full max-w-xs">
-                            <label className="label">
+                            <label className="label" htmlFor="exp-company">
                                 <span className="label-text">Company <span className="text-error">*</span></span>
                             </label>
                             <input
+                                id="exp-company"
                                 name="company"
                                 type="text"
                                 placeholder="Company"
                                 className={`input input-bordered w-full ${experienceValidation.errors.company ? 'input-error' : ''}`}
+                                aria-required="true"
+                                aria-invalid={experienceValidation.errors.company ? "true" : "false"}
+                                aria-describedby={experienceValidation.errors.company ? "exp-company-error" : undefined}
                                 onChange={(e) => experienceValidation.validate("company", e.currentTarget.value)}
                             />
                             {experienceValidation.errors.company && (
                                 <label className="label">
-                                    <span className="label-text-alt text-error">{experienceValidation.errors.company}</span>
+                                    <span id="exp-company-error" className="label-text-alt text-error" role="alert">{experienceValidation.errors.company}</span>
                                 </label>
                             )}
                         </div>
                         <div className="form-control w-full max-w-xs">
-                            <label className="label">
+                            <label className="label" htmlFor="exp-location">
                                 <span className="label-text">Location <span className="text-error">*</span></span>
                             </label>
                             <input
+                                id="exp-location"
                                 name="location"
                                 type="text"
                                 placeholder="Location"
                                 className={`input input-bordered w-full ${experienceValidation.errors.location ? 'input-error' : ''}`}
+                                aria-required="true"
+                                aria-invalid={experienceValidation.errors.location ? "true" : "false"}
+                                aria-describedby={experienceValidation.errors.location ? "exp-location-error" : undefined}
                                 onChange={(e) => experienceValidation.validate("location", e.currentTarget.value)}
                             />
                             {experienceValidation.errors.location && (
                                 <label className="label">
-                                    <span className="label-text-alt text-error">{experienceValidation.errors.location}</span>
+                                    <span id="exp-location-error" className="label-text-alt text-error" role="alert">{experienceValidation.errors.location}</span>
                                 </label>
                             )}
                         </div>
@@ -392,49 +422,59 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
 
                     <div className="flex gap-4 items-start">
                         <div className="form-control">
-                            <label className="label">
+                            <label className="label" htmlFor="exp-startDate">
                                 <span className="label-text">Start Date <span className="text-error">*</span></span>
                             </label>
                             <input
+                                id="exp-startDate"
                                 name="startDate"
                                 type="date"
                                 placeholder="Start Date"
                                 className={`input input-bordered w-full max-w-xs ${experienceValidation.errors.startDate ? 'input-error' : ''}`}
+                                aria-required="true"
+                                aria-invalid={experienceValidation.errors.startDate ? "true" : "false"}
+                                aria-describedby={experienceValidation.errors.startDate ? "exp-startDate-error" : undefined}
                                 onChange={(e) => experienceValidation.validate("startDate", e.currentTarget.value)}
                             />
                             {experienceValidation.errors.startDate && (
                                 <label className="label">
-                                    <span className="label-text-alt text-error">{experienceValidation.errors.startDate}</span>
+                                    <span id="exp-startDate-error" className="label-text-alt text-error" role="alert">{experienceValidation.errors.startDate}</span>
                                 </label>
                             )}
                         </div>
 
                         <div className="form-control">
-                            <label className="label">
+                            <label className="label" htmlFor="exp-endDate">
                                 <span className="label-text">End Date {!currently && <span className="text-error">*</span>}</span>
                             </label>
                             <input
+                                id="exp-endDate"
                                 name="endDate"
                                 disabled={currently}
                                 type="date"
                                 placeholder="End Date"
                                 className={`input input-bordered w-full max-w-xs ${experienceValidation.errors.endDate ? 'input-error' : ''}`}
+                                aria-required={!currently ? "true" : "false"}
+                                aria-invalid={experienceValidation.errors.endDate ? "true" : "false"}
+                                aria-describedby={experienceValidation.errors.endDate ? "exp-endDate-error" : undefined}
                                 onChange={(e) => experienceValidation.validate("endDate", e.currentTarget.value)}
                             />
                             {experienceValidation.errors.endDate && (
                                 <label className="label">
-                                    <span className="label-text-alt text-error">{experienceValidation.errors.endDate}</span>
+                                    <span id="exp-endDate-error" className="label-text-alt text-error" role="alert">{experienceValidation.errors.endDate}</span>
                                 </label>
                             )}
                         </div>
 
                         <div className="form-control mt-9">
-                            <label className="label cursor-pointer gap-2">
+                            <label className="label cursor-pointer gap-2" htmlFor="exp-currently">
                                 <input
+                                    id="exp-currently"
                                     type="checkbox"
                                     name="currently"
                                     className="checkbox checkbox-sm"
                                     checked={currently}
+                                    aria-label="Currently working here"
                                     onChange={() => {
                                         setCurrently(!currently);
                                         if (!currently) {
@@ -448,10 +488,11 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                     </div>
 
                     <div className="form-control w-full mt-2">
-                        <label className="label">
+                        <label className="label" htmlFor="exp-description">
                             <span className="label-text">Description</span>
                         </label>
                         <textarea
+                            id="exp-description"
                             name="description"
                             className="textarea textarea-bordered w-full"
                             placeholder="Description"
@@ -509,53 +550,65 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
 
                     <div className="mt-2 flex gap-4">
                         <div className="form-control w-full max-w-xs">
-                            <label className="label">
+                            <label className="label" htmlFor="edu-title">
                                 <span className="label-text">Degree <span className="text-error">*</span></span>
                             </label>
                             <input 
+                                id="edu-title"
                                 name="title" 
                                 type="text" 
                                 placeholder="Your degree" 
                                 className={`input input-bordered w-full ${educationValidation.errors.title ? 'input-error' : ''}`}
+                                aria-required="true"
+                                aria-invalid={educationValidation.errors.title ? "true" : "false"}
+                                aria-describedby={educationValidation.errors.title ? "edu-title-error" : undefined}
                                 onChange={(e) => educationValidation.validate("title", e.currentTarget.value)}
                             />
                             {educationValidation.errors.title && (
                                 <label className="label">
-                                    <span className="label-text-alt text-error">{educationValidation.errors.title}</span>
+                                    <span id="edu-title-error" className="label-text-alt text-error" role="alert">{educationValidation.errors.title}</span>
                                 </label>
                             )}
                         </div>
                         <div className="form-control w-full max-w-xs">
-                            <label className="label">
+                            <label className="label" htmlFor="edu-school">
                                 <span className="label-text">School <span className="text-error">*</span></span>
                             </label>
                             <input 
+                                id="edu-school"
                                 name="school" 
                                 type="text" 
                                 placeholder="School Name" 
                                 className={`input input-bordered w-full ${educationValidation.errors.school ? 'input-error' : ''}`}
+                                aria-required="true"
+                                aria-invalid={educationValidation.errors.school ? "true" : "false"}
+                                aria-describedby={educationValidation.errors.school ? "edu-school-error" : undefined}
                                 onChange={(e) => educationValidation.validate("school", e.currentTarget.value)}
                             />
                             {educationValidation.errors.school && (
                                 <label className="label">
-                                    <span className="label-text-alt text-error">{educationValidation.errors.school}</span>
+                                    <span id="edu-school-error" className="label-text-alt text-error" role="alert">{educationValidation.errors.school}</span>
                                 </label>
                             )}
                         </div>
                         <div className="form-control w-full max-w-xs">
-                            <label className="label">
+                            <label className="label" htmlFor="edu-location">
                                 <span className="label-text">Location <span className="text-error">*</span></span>
                             </label>
                             <input 
+                                id="edu-location"
                                 name="location" 
                                 type="text" 
                                 placeholder="Location" 
                                 className={`input input-bordered w-full ${educationValidation.errors.location ? 'input-error' : ''}`}
+                                aria-required="true"
+                                aria-invalid={educationValidation.errors.location ? "true" : "false"}
+                                aria-describedby={educationValidation.errors.location ? "edu-location-error" : undefined}
                                 onChange={(e) => educationValidation.validate("location", e.currentTarget.value)}
                             />
                             {educationValidation.errors.location && (
                                 <label className="label">
-                                    <span className="label-text-alt text-error">{educationValidation.errors.location}</span>
+                                    <span id="edu-location-error" className="label-text-alt text-error" role="alert">{educationValidation.errors.location}</span>
                                 </label>
                             )}
                         </div>
@@ -563,37 +616,45 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
 
                     <div className="flex gap-4">
                         <div className="form-control">
-                            <label className="label">
+                            <label className="label" htmlFor="edu-startDate">
                                 <span className="label-text">Start Date <span className="text-error">*</span></span>
                             </label>
                             <input 
+                                id="edu-startDate"
                                 name="startDate" 
                                 type="date" 
                                 placeholder="Start Date" 
                                 className={`input input-bordered w-full max-w-xs ${educationValidation.errors.startDate ? 'input-error' : ''}`}
+                                aria-required="true"
+                                aria-invalid={educationValidation.errors.startDate ? "true" : "false"}
+                                aria-describedby={educationValidation.errors.startDate ? "edu-startDate-error" : undefined}
                                 onChange={(e) => educationValidation.validate("startDate", e.currentTarget.value)}
                             />
                             {educationValidation.errors.startDate && (
                                 <label className="label">
-                                    <span className="label-text-alt text-error">{educationValidation.errors.startDate}</span>
+                                    <span id="edu-startDate-error" className="label-text-alt text-error" role="alert">{educationValidation.errors.startDate}</span>
                                 </label>
                             )}
                         </div>
 
                         <div className="form-control">
-                            <label className="label">
+                            <label className="label" htmlFor="edu-endDate">
                                 <span className="label-text">End Date <span className="text-error">*</span></span>
                             </label>
                             <input 
+                                id="edu-endDate"
                                 name="endDate" 
                                 type="date" 
                                 placeholder="End Date" 
                                 className={`input input-bordered w-full max-w-xs ${educationValidation.errors.endDate ? 'input-error' : ''}`}
+                                aria-required="true"
+                                aria-invalid={educationValidation.errors.endDate ? "true" : "false"}
+                                aria-describedby={educationValidation.errors.endDate ? "edu-endDate-error" : undefined}
                                 onChange={(e) => educationValidation.validate("endDate", e.currentTarget.value)}
                             />
                             {educationValidation.errors.endDate && (
                                 <label className="label">
-                                    <span className="label-text-alt text-error">{educationValidation.errors.endDate}</span>
+                                    <span id="edu-endDate-error" className="label-text-alt text-error" role="alert">{educationValidation.errors.endDate}</span>
                                 </label>
                             )}
                         </div>
@@ -641,18 +702,22 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                     skillsValidation.clearAllErrors();
                 }}>
                     <div className="form-control w-full">
-                        <label className="label">
+                        <label className="label" htmlFor="skills-input">
                             <span className="label-text">Skills <span className="text-error">*</span></span>
                         </label>
                         <textarea
+                            id="skills-input"
                             name="skills"
                             className={`textarea textarea-bordered w-full ${skillsValidation.errors.skills ? 'textarea-error' : ''}`}
                             placeholder="Separate your skills with a comma ( , )"
+                            aria-required="true"
+                            aria-invalid={skillsValidation.errors.skills ? "true" : "false"}
+                            aria-describedby={skillsValidation.errors.skills ? "skills-error" : undefined}
                             onChange={(e) => skillsValidation.validate("skills", e.currentTarget.value)}
                         />
                         {skillsValidation.errors.skills && (
                             <label className="label">
-                                <span className="label-text-alt text-error">{skillsValidation.errors.skills}</span>
+                                <span id="skills-error" className="label-text-alt text-error" role="alert">{skillsValidation.errors.skills}</span>
                             </label>
                         )}
                     </div>
@@ -690,36 +755,44 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                 }}>
                     <div className="mt-2 flex gap-4">
                         <div className="form-control w-full max-w-xs">
-                            <label className="label">
+                            <label className="label" htmlFor="project-name">
                                 <span className="label-text">Project Name <span className="text-error">*</span></span>
                             </label>
                             <input 
+                                id="project-name"
                                 name="name" 
                                 type="text" 
                                 placeholder="Name" 
                                 className={`input input-bordered w-full ${projectsValidation.errors.name ? 'input-error' : ''}`}
+                                aria-required="true"
+                                aria-invalid={projectsValidation.errors.name ? "true" : "false"}
+                                aria-describedby={projectsValidation.errors.name ? "project-name-error" : undefined}
                                 onChange={(e) => projectsValidation.validate("name", e.currentTarget.value)}
                             />
                             {projectsValidation.errors.name && (
                                 <label className="label">
-                                    <span className="label-text-alt text-error">{projectsValidation.errors.name}</span>
+                                    <span id="project-name-error" className="label-text-alt text-error" role="alert">{projectsValidation.errors.name}</span>
                                 </label>
                             )}
                         </div>
                         <div className="form-control w-full max-w-xs">
-                            <label className="label">
+                            <label className="label" htmlFor="project-url">
                                 <span className="label-text">Project URL <span className="text-error">*</span></span>
                             </label>
                             <input 
+                                id="project-url"
                                 name="url" 
                                 type="text" 
                                 placeholder="URL" 
                                 className={`input input-bordered w-full ${projectsValidation.errors.url ? 'input-error' : ''}`}
+                                aria-required="true"
+                                aria-invalid={projectsValidation.errors.url ? "true" : "false"}
+                                aria-describedby={projectsValidation.errors.url ? "project-url-error" : undefined}
                                 onChange={(e) => projectsValidation.validate("url", e.currentTarget.value)}
                             />
                             {projectsValidation.errors.url && (
                                 <label className="label">
-                                    <span className="label-text-alt text-error">{projectsValidation.errors.url}</span>
+                                    <span id="project-url-error" className="label-text-alt text-error" role="alert">{projectsValidation.errors.url}</span>
                                 </label>
                             )}
                         </div>
@@ -766,18 +839,22 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                     certificationsValidation.clearAllErrors();
                 }}>
                     <div className="form-control w-full">
-                        <label className="label">
+                        <label className="label" htmlFor="certifications-input">
                             <span className="label-text">Certifications <span className="text-error">*</span></span>
                         </label>
                         <textarea
+                            id="certifications-input"
                             name="certifications"
                             className={`textarea textarea-bordered w-full ${certificationsValidation.errors.certifications ? 'textarea-error' : ''}`}
                             placeholder="Separate your certifications with a comma ( , )"
+                            aria-required="true"
+                            aria-invalid={certificationsValidation.errors.certifications ? "true" : "false"}
+                            aria-describedby={certificationsValidation.errors.certifications ? "certifications-error" : undefined}
                             onChange={(e) => certificationsValidation.validate("certifications", e.currentTarget.value)}
                         />
                         {certificationsValidation.errors.certifications && (
                             <label className="label">
-                                <span className="label-text-alt text-error">{certificationsValidation.errors.certifications}</span>
+                                <span id="certifications-error" className="label-text-alt text-error" role="alert">{certificationsValidation.errors.certifications}</span>
                             </label>
                         )}
                     </div>
@@ -808,18 +885,22 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                     languagesValidation.clearAllErrors();
                 }}>
                     <div className="form-control w-full">
-                        <label className="label">
+                        <label className="label" htmlFor="languages-input">
                             <span className="label-text">Languages <span className="text-error">*</span></span>
                         </label>
                         <textarea
+                            id="languages-input"
                             name="languages"
                             className={`textarea textarea-bordered w-full ${languagesValidation.errors.languages ? 'textarea-error' : ''}`}
                             placeholder="Separate your languages with a comma ( , )"
+                            aria-required="true"
+                            aria-invalid={languagesValidation.errors.languages ? "true" : "false"}
+                            aria-describedby={languagesValidation.errors.languages ? "languages-error" : undefined}
                             onChange={(e) => languagesValidation.validate("languages", e.currentTarget.value)}
                         />
                         {languagesValidation.errors.languages && (
                             <label className="label">
-                                <span className="label-text-alt text-error">{languagesValidation.errors.languages}</span>
+                                <span id="languages-error" className="label-text-alt text-error" role="alert">{languagesValidation.errors.languages}</span>
                             </label>
                         )}
                     </div>
