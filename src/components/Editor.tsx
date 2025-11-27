@@ -4,6 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import { getFormData, socialNetworks, splitByComma } from "../utils";
 import { useFormValidation, type ValidationSchema } from "../hooks/useFormValidation";
 import { validateEmail, validateUrl, validateDateRange, validateImage } from "../utils/validation";
+import { useNotification } from "../hooks/useNotification";
+import { NotificationContainer } from "./NotificationContainer";
+import ConfirmDialog from "./ConfirmDialog";
 
 interface UseEditModeReturn<T> {
   isEditing: boolean;
@@ -21,9 +24,14 @@ interface EditorProps {
 }
 
 export default function Editor({ experienceEditMode, educationEditMode, projectsEditMode }: EditorProps) {
-    const { name, role, bio, contact, setBasic, setContact, setArrData } = useCvStore();
+    const { name, role, bio, contact, setBasic, setContact, setArrData, clearAll, exportData, importData } = useCvStore();
     const [currently, setCurrently] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
+    const [showClearDialog, setShowClearDialog] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Notification system
+    const { notifications, showNotification, dismissNotification } = useNotification();
 
     // Form refs for resetting
     const experienceFormRef = useRef<HTMLFormElement>(null);
@@ -820,6 +828,187 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                     </button>
                 </form>
             </section>
+
+            <div className="divider"></div>
+
+            <section className="mt-4 mb-8">
+                <h1 className="text-3xl font-bold">Data Management</h1>
+                <p className="text-sm text-gray-600 mt-2">Manage your CV data: export for backup, import from file, or start fresh.</p>
+                
+                <div className="flex flex-wrap gap-4 mt-4">
+                    <button 
+                        className="btn btn-sm btn-primary"
+                        onClick={handleExportData}
+                        aria-label="Export CV data to JSON file"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Export Data
+                    </button>
+
+                    <button 
+                        className="btn btn-sm btn-secondary"
+                        onClick={handleImportClick}
+                        aria-label="Import CV data from JSON file"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        Import Data
+                    </button>
+
+                    <button 
+                        className="btn btn-sm btn-error"
+                        onClick={() => setShowClearDialog(true)}
+                        aria-label="Clear all CV data"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Clear All Data
+                    </button>
+                </div>
+
+                {/* Hidden file input for import */}
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".json,application/json"
+                    style={{ display: 'none' }}
+                    onChange={handleImportFile}
+                    aria-label="Select JSON file to import"
+                />
+            </section>
+
+            {/* Notification Container */}
+            <NotificationContainer 
+                notifications={notifications}
+                onDismiss={dismissNotification}
+            />
+
+            {/* Clear All Confirmation Dialog */}
+            <ConfirmDialog
+                isOpen={showClearDialog}
+                title="Clear All Data"
+                message="Are you sure you want to clear all your CV data? This action cannot be undone and all your information will be permanently deleted."
+                confirmText="Clear All"
+                cancelText="Cancel"
+                type="error"
+                onConfirm={handleClearAll}
+                onCancel={() => setShowClearDialog(false)}
+            />
         </div>
     );
+
+    // Handler functions
+    function handleExportData() {
+        try {
+            const jsonData = exportData();
+            const blob = new Blob([jsonData], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            const date = new Date().toISOString().split('T')[0];
+            link.href = url;
+            link.download = `cv-data-${date}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showNotification('success', 'CV data exported successfully!');
+        } catch (error) {
+            console.error('Export error:', error);
+            showNotification('error', 'Failed to export CV data. Please try again.');
+        }
+    }
+
+    function handleImportClick() {
+        fileInputRef.current?.click();
+    }
+
+    function handleImportFile(event: React.ChangeEvent<HTMLInputElement>) {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.includes('json') && !file.name.endsWith('.json')) {
+            showNotification('error', 'Invalid file type. Please select a JSON file.');
+            event.target.value = ''; // Reset input
+            return;
+        }
+
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+            try {
+                const jsonString = e.target?.result as string;
+                
+                // Validate JSON format
+                if (!jsonString || jsonString.trim() === '') {
+                    throw new Error('File is empty');
+                }
+
+                // Import the data (this will throw if invalid)
+                importData(jsonString);
+                
+                showNotification('success', 'CV data imported successfully!');
+                
+                // Reset all form validations
+                basicInfoValidation.clearAllErrors();
+                contactValidation.clearAllErrors();
+                experienceValidation.clearAllErrors();
+                educationValidation.clearAllErrors();
+                projectsValidation.clearAllErrors();
+                skillsValidation.clearAllErrors();
+                certificationsValidation.clearAllErrors();
+                languagesValidation.clearAllErrors();
+                
+            } catch (error) {
+                console.error('Import error:', error);
+                showNotification('error', 'Failed to import CV data. Please check the file format and try again.');
+            } finally {
+                // Reset file input
+                event.target.value = '';
+            }
+        };
+
+        reader.onerror = () => {
+            showNotification('error', 'Failed to read file. Please try again.');
+            event.target.value = '';
+        };
+
+        reader.readAsText(file);
+    }
+
+    function handleClearAll() {
+        try {
+            clearAll();
+            setShowClearDialog(false);
+            
+            // Reset all forms
+            experienceFormRef.current?.reset();
+            educationFormRef.current?.reset();
+            projectsFormRef.current?.reset();
+            
+            // Clear all validations
+            basicInfoValidation.clearAllErrors();
+            contactValidation.clearAllErrors();
+            experienceValidation.clearAllErrors();
+            educationValidation.clearAllErrors();
+            projectsValidation.clearAllErrors();
+            skillsValidation.clearAllErrors();
+            certificationsValidation.clearAllErrors();
+            languagesValidation.clearAllErrors();
+            
+            // Reset local state
+            setCurrently(false);
+            setImageFile(null);
+            
+            showNotification('success', 'All CV data has been cleared.');
+        } catch (error) {
+            console.error('Clear error:', error);
+            showNotification('error', 'Failed to clear CV data. Please try again.');
+        }
+    }
 }

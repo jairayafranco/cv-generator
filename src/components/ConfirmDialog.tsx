@@ -29,12 +29,18 @@ export default function ConfirmDialog({
     if (!dialog) return;
 
     if (isOpen) {
-      dialog.showModal();
+      // Check if showModal exists (not available in jsdom)
+      if (typeof dialog.showModal === 'function') {
+        dialog.showModal();
+      }
       // Focus the cancel button by default for safety
       const cancelButton = dialog.querySelector('[data-cancel-button]') as HTMLButtonElement;
       cancelButton?.focus();
     } else {
-      dialog.close();
+      // Check if close exists (not available in jsdom)
+      if (typeof dialog.close === 'function') {
+        dialog.close();
+      }
     }
   }, [isOpen]);
 

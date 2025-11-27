@@ -20,6 +20,9 @@ vi.mock('../store/useCvStore', () => ({
     setBasic: vi.fn(),
     setContact: vi.fn(),
     setArrData: vi.fn(),
+    clearAll: vi.fn(),
+    exportData: vi.fn(() => '{}'),
+    importData: vi.fn(),
   }),
 }));
 
@@ -151,6 +154,8 @@ describe('Editor Component', () => {
     );
 
     expect(screen.getByText('Update Experience')).toBeDefined();
-    expect(screen.getByText('Cancel')).toBeDefined();
+    // Check for Cancel button in the form (there may be multiple Cancel buttons)
+    const cancelButtons = screen.getAllByText('Cancel');
+    expect(cancelButtons.length).toBeGreaterThan(0);
   });
 });
