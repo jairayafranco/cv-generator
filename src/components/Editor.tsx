@@ -4,7 +4,7 @@ import { useState } from "react";
 import { getFormData, socialNetworks, splitByComma } from "../utils";
 
 export default function Editor() {
-    const { setBasic, setContact, setArrData } = useCvStore();
+    const { name, role, bio, contact, setBasic, setContact, setArrData } = useCvStore();
     const [currently, setCurrently] = useState(false);
 
     return (
@@ -31,19 +31,22 @@ export default function Editor() {
                         type="text"
                         placeholder="Your name"
                         className="input input-bordered w-full max-w-sm"
-                        onInput={(e) => setBasic("name", e.currentTarget.value)}
+                        value={name}
+                        onChange={(e) => setBasic("name", e.currentTarget.value)}
                     />
                     <input
                         type="text"
                         placeholder="Your role"
                         className="input input-bordered w-full max-w-sm"
-                        onInput={(e) => setBasic("role", e.currentTarget.value)}
+                        value={role}
+                        onChange={(e) => setBasic("role", e.currentTarget.value)}
                     />
                 </div>
                 <textarea
                     className="textarea textarea-bordered mt-4 w-full"
                     placeholder="Your bio"
-                    onInput={(e) => setBasic("bio", e.currentTarget.value)}
+                    value={bio}
+                    onChange={(e) => setBasic("bio", e.currentTarget.value)}
                 />
             </section>
 
@@ -58,7 +61,8 @@ export default function Editor() {
                             type="text"
                             placeholder={socialNetwork.label}
                             className="input input-bordered w-full max-w-xs"
-                            onInput={(e) => setContact(socialNetwork.name as keyof Contact, e.currentTarget.value)}
+                            value={contact[socialNetwork.name as keyof Contact]}
+                            onChange={(e) => setContact(socialNetwork.name as keyof Contact, e.currentTarget.value)}
                         />
                     ))}
                 </div>

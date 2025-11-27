@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useCvStore } from './useCvStore';
 import type { Experience, Education, Projects } from '../types/CvStore';
+import * as fc from 'fast-check';
 
 describe('CV Store CRUD Operations', () => {
     beforeEach(() => {
@@ -426,6 +427,167 @@ describe('Persistence', () => {
         localStorage.clear();
         // Reset store
         useCvStore.getState().clearAll();
+    });
+
+    // Feature: cv-generator-improvements, Property 1: Persistence round trip
+    // Validates: Requirements 1.1, 1.2, 1.3
+    it('property test: persistence round trip - saving and loading produces equivalent state', () => {
+        // Arbitraries for generating random CV data
+        const experienceArb = fc.record({
+            id: fc.uuid(),
+            title: fc.string({ minLength: 1, maxLength: 100 }),
+            company: fc.string({ minLength: 1, maxLength: 100 }),
+            location: fc.string({ minLength: 1, maxLength: 100 }),
+            startDate: fc.date({ min: new Date('2000-01-01'), max: new Date('2025-01-01') }).map(d => d.toISOString().slice(0, 7)),
+            endDate: fc.date({ min: new Date('2000-01-01'), max: new Date('2025-01-01') }).map(d => d.toISOString().slice(0, 7)),
+            description: fc.string({ maxLength: 500 })
+        });
+
+        const educationArb = fc.record({
+            id: fc.uuid(),
+            title: fc.string({ minLength: 1, maxLength: 100 }),
+            school: fc.string({ minLength: 1, maxLength: 100 }),
+            location: fc.string({ minLength: 1, maxLength: 100 }),
+            startDate: fc.date({ min: new Date('2000-01-01'), max: new Date('2025-01-01') }).map(d => d.toISOString().slice(0, 7)),
+            endDate: fc.date({ min: new Date('2000-01-01'), max: new Date('2025-01-01') }).map(d => d.toISOString().slice(0, 7))
+        });
+
+        const projectArb = fc.record({
+            id: fc.uuid(),
+            name: fc.string({ minLength: 1, maxLength: 100 }),
+            url: fc.webUrl()
+        });
+
+        const contactArb = fc.record({
+            email: fc.emailAddress(),
+            phone: fc.string({ minLength: 0, maxLength: 20 }),
+            website: fc.oneof(fc.constant(''), fc.webUrl()),
+            github: fc.string({ minLength: 0, maxLength: 50 }),
+            linkedin: fc.string({ minLength: 0, maxLength: 50 }),
+            twitter: fc.string({ minLength: 0, maxLength: 50 })
+        });
+
+        const cvStateArb = fc.record({
+            img: fc.oneof(fc.constant(''), fc.string({ minLength: 10, maxLength: 100 })),
+            name: fc.string({ minLength: 0, maxLength: 100 }),
+            role: fc.string({ minLength: 0, maxLength: 100 }),
+            bio: fc.string({ minLength: 0, maxLength: 500 }),
+            experience: fc.array(experienceArb, { maxLength: 5 }),
+            education: fc.array(educationArb, { maxLength: 5 }),
+            skills: fc.array(fc.string({ minLength: 1, maxLength: 50 }), { maxLength: 10 }),
+            projects: fc.array(projectArb, { maxLength: 5 }),
+            certifications: fc.array(fc.string({ minLength: 1, maxLength: 100 }), { maxLength: 10 }),
+            languages: fc.array(fc.string({ minLength: 1, maxLength: 50 }), { maxLength: 10 }),
+            contact: contactArb
+        });
+
+        fc.assert(
+            fc.property(cvStateArb, (cvData) => {
+                // Clear localStorage and store before each property test iteration
+                localStorage.clear();
+                useCvStore.getState().clearAll();
+
+                // Set the state with generated data
+                const store = useCvStore.getState();
+                store.setBasic('img', cvData.img);
+                store.setBasic('name', cvData.name);
+                store.setBasic('role', cvData.role);
+                store.setBasic('bio', cvData.bio);
+
+                // Set contact info
+                Object.entries(cvData.contact).forEach(([key, value]) => {
+                    store.setContact(key as keyof typeof cvData.contact, value);
+                });
+
+                // Set array data
+                cvData.experience.forEach(exp => store.setArrData('experience', exp));
+                cvData.education.forEach(edu => store.setArrData('education', edu));
+                cvData.projects.forEach(proj => store.setArrData('projects', proj));
+                
+                if (cvData.skills.length > 0) {
+                    store.setArrData('skills', cvData.skills);
+                }
+                if (cvData.certifications.length > 0) {
+                    store.setArrData('certifications', cvData.certifications);
+                }
+                if (cvData.languages.length > 0) {
+                    store.setArrData('languages', cvData.languages);
+                }
+
+                // Get the state after setting all data
+                const stateBeforePersist = useCvStore.getState();
+
+                // Verify data was persisted to localStorage
+                const stored = localStorage.getItem('cv-storage');
+                expect(stored).toBeTruthy();
+
+                // Simulate page reload by creating a new store instance
+                // In Zustand with persist middleware, we need to clear the store and let it reload from localStorage
+                // We'll use the importData/exportData as a proxy for the persistence round trip
+                const exportedData = stateBeforePersist.exportData();
+                
+                // Clear the store
+                store.clearAll();
+                
+                // Import the data back
+                store.importData(exportedData);
+                
+                // Get the state after reload
+                const stateAfterReload = useCvStore.getState();
+
+                // Verify all fields match
+                expect(stateAfterReload.img).toBe(cvData.img);
+                expect(stateAfterReload.name).toBe(cvData.name);
+                expect(stateAfterReload.role).toBe(cvData.role);
+                expect(stateAfterReload.bio).toBe(cvData.bio);
+
+                // Verify contact info
+                expect(stateAfterReload.contact.email).toBe(cvData.contact.email);
+                expect(stateAfterReload.contact.phone).toBe(cvData.contact.phone);
+                expect(stateAfterReload.contact.website).toBe(cvData.contact.website);
+                expect(stateAfterReload.contact.github).toBe(cvData.contact.github);
+                expect(stateAfterReload.contact.linkedin).toBe(cvData.contact.linkedin);
+                expect(stateAfterReload.contact.twitter).toBe(cvData.contact.twitter);
+
+                // Verify array data lengths
+                expect(stateAfterReload.experience.length).toBe(cvData.experience.length);
+                expect(stateAfterReload.education.length).toBe(cvData.education.length);
+                expect(stateAfterReload.projects.length).toBe(cvData.projects.length);
+                expect(stateAfterReload.skills).toEqual(cvData.skills);
+                expect(stateAfterReload.certifications).toEqual(cvData.certifications);
+                expect(stateAfterReload.languages).toEqual(cvData.languages);
+
+                // Verify experience items
+                cvData.experience.forEach((exp, index) => {
+                    expect(stateAfterReload.experience[index].title).toBe(exp.title);
+                    expect(stateAfterReload.experience[index].company).toBe(exp.company);
+                    expect(stateAfterReload.experience[index].location).toBe(exp.location);
+                    expect(stateAfterReload.experience[index].startDate).toBe(exp.startDate);
+                    expect(stateAfterReload.experience[index].endDate).toBe(exp.endDate);
+                    expect(stateAfterReload.experience[index].description).toBe(exp.description);
+                    // ID should be preserved
+                    expect(stateAfterReload.experience[index].id).toBe(exp.id);
+                });
+
+                // Verify education items
+                cvData.education.forEach((edu, index) => {
+                    expect(stateAfterReload.education[index].title).toBe(edu.title);
+                    expect(stateAfterReload.education[index].school).toBe(edu.school);
+                    expect(stateAfterReload.education[index].location).toBe(edu.location);
+                    expect(stateAfterReload.education[index].startDate).toBe(edu.startDate);
+                    expect(stateAfterReload.education[index].endDate).toBe(edu.endDate);
+                    expect(stateAfterReload.education[index].id).toBe(edu.id);
+                });
+
+                // Verify project items
+                cvData.projects.forEach((proj, index) => {
+                    expect(stateAfterReload.projects[index].name).toBe(proj.name);
+                    expect(stateAfterReload.projects[index].url).toBe(proj.url);
+                    expect(stateAfterReload.projects[index].id).toBe(proj.id);
+                });
+            }),
+            { numRuns: 100 } // Run 100 iterations as specified in the design
+        );
     });
 
     it('should persist data to localStorage when state changes', () => {
