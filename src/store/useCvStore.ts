@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type { Contact, CvStore, setArrDataName, setArrDataValue, setBasicName } from "../types/CvStore";
 
 // Migration helper to add IDs to existing data
@@ -9,7 +10,8 @@ const addIdIfMissing = <T extends { id?: string }>(item: T): T & { id: string } 
     };
 };
 
-export const useCvStore = create<CvStore>((set) => ({
+// Default state for the CV store
+const defaultState = {
     img: "",
     name: "",
     role: "",
@@ -28,6 +30,41 @@ export const useCvStore = create<CvStore>((set) => ({
         linkedin: "",
         twitter: "",
     },
+};
+
+// Custom storage with error handling
+const createSafeStorage = () => {
+    return {
+        getItem: (name: string): string | null => {
+            try {
+                return localStorage.getItem(name);
+            } catch (error) {
+                console.error('Failed to read from localStorage:', error);
+                return null;
+            }
+        },
+        setItem: (name: string, value: string): void => {
+            try {
+                localStorage.setItem(name, value);
+            } catch (error) {
+                console.error('Failed to write to localStorage:', error);
+                // Continue operating with in-memory state only
+            }
+        },
+        removeItem: (name: string): void => {
+            try {
+                localStorage.removeItem(name);
+            } catch (error) {
+                console.error('Failed to remove from localStorage:', error);
+            }
+        },
+    };
+};
+
+export const useCvStore = create<CvStore>()(
+    persist(
+        (set, get) => ({
+    ...defaultState,
     setBasic: (name: setBasicName, value: string) => set({ [name]: value }),
     setContact: (name: keyof Contact, value: string) => set((state) => ({
         contact: { ...state.contact, [name]: value }
@@ -90,29 +127,10 @@ export const useCvStore = create<CvStore>((set) => ({
             [name]: currentArray.filter(item => item.id !== id)
         };
     }),
-    clearAll: () => set({
-        img: "",
-        name: "",
-        role: "",
-        bio: "",
-        experience: [],
-        education: [],
-        skills: [],
-        projects: [],
-        certifications: [],
-        languages: [],
-        contact: {
-            email: "",
-            phone: "",
-            website: "",
-            github: "",
-            linkedin: "",
-            twitter: "",
-        },
-    }),
-    exportData: () => {
-        const state = useCvStore.getState();
-        const exportData = {
+    clearAll: () => set(defaultState),
+    exportData: (): string => {
+        const state = get();
+        const data = {
             img: state.img,
             name: state.name,
             role: state.role,
@@ -125,7 +143,7 @@ export const useCvStore = create<CvStore>((set) => ({
             languages: state.languages,
             contact: state.contact,
         };
-        return JSON.stringify(exportData, null, 2);
+        return JSON.stringify(data, null, 2);
     },
     importData: (jsonString: string) => {
         try {
@@ -175,4 +193,50 @@ export const useCvStore = create<CvStore>((set) => ({
             throw error;
         }
     },
-}));
+        }),
+        {
+            name: 'cv-storage',
+            version: 1,
+            storage: createJSONStorage(() => createSafeStorage()),
+            // Migration function for future schema changes
+            migrate: (persistedState: unknown, version: number) => {
+                // If version is 0 (no version stored), migrate to version 1
+                if (version === 0) {
+                    const state = persistedState as Partial<CvStore>;
+                    
+                    // Add IDs to existing data that might not have them
+                    return {
+                        ...defaultState,
+                        ...state,
+                        experience: Array.isArray(state.experience) 
+                            ? state.experience.map(addIdIfMissing) 
+                            : [],
+                        education: Array.isArray(state.education) 
+                            ? state.education.map(addIdIfMissing) 
+                            : [],
+                        projects: Array.isArray(state.projects) 
+                            ? state.projects.map(addIdIfMissing) 
+                            : [],
+                    } as CvStore;
+                }
+                
+                // For future versions, add migration logic here
+                return persistedState as CvStore;
+            },
+            // Partial persist - only persist data, not methods
+            partialize: (state) => ({
+                img: state.img,
+                name: state.name,
+                role: state.role,
+                bio: state.bio,
+                experience: state.experience,
+                education: state.education,
+                skills: state.skills,
+                projects: state.projects,
+                certifications: state.certifications,
+                languages: state.languages,
+                contact: state.contact,
+            }),
+        }
+    )
+);

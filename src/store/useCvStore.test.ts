@@ -419,3 +419,109 @@ describe('CV Store CRUD Operations', () => {
         });
     });
 });
+
+describe('Persistence', () => {
+    beforeEach(() => {
+        // Clear localStorage before each test
+        localStorage.clear();
+        // Reset store
+        useCvStore.getState().clearAll();
+    });
+
+    it('should persist data to localStorage when state changes', () => {
+        const store = useCvStore.getState();
+        
+        store.setBasic('name', 'John Doe');
+        store.setBasic('role', 'Developer');
+        store.setContact('email', 'john@example.com');
+
+        // Check that data was persisted to localStorage
+        const stored = localStorage.getItem('cv-storage');
+        expect(stored).toBeTruthy();
+        
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            expect(parsed.state.name).toBe('John Doe');
+            expect(parsed.state.role).toBe('Developer');
+            expect(parsed.state.contact.email).toBe('john@example.com');
+        }
+    });
+
+    it('should persist array data to localStorage', () => {
+        const store = useCvStore.getState();
+        
+        const experience: Experience = {
+            id: 'exp-1',
+            title: 'Software Engineer',
+            company: 'Tech Corp',
+            location: 'San Francisco',
+            startDate: '2020-01',
+            endDate: '2023-01',
+            description: 'Built things'
+        };
+        store.setArrData('experience', experience);
+        store.setArrData('skills', ['JavaScript', 'TypeScript']);
+
+        const stored = localStorage.getItem('cv-storage');
+        expect(stored).toBeTruthy();
+        
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            expect(parsed.state.experience).toHaveLength(1);
+            expect(parsed.state.experience[0].title).toBe('Software Engineer');
+            expect(parsed.state.skills).toEqual(['JavaScript', 'TypeScript']);
+        }
+    });
+
+    it('should persist image data to localStorage', () => {
+        const store = useCvStore.getState();
+        
+        const base64Image = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+        store.setBasic('img', base64Image);
+
+        const stored = localStorage.getItem('cv-storage');
+        expect(stored).toBeTruthy();
+        
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            expect(parsed.state.img).toBe(base64Image);
+        }
+    });
+
+    it('should clear localStorage when clearAll is called', () => {
+        const store = useCvStore.getState();
+        
+        // Add some data
+        store.setBasic('name', 'John Doe');
+        store.setContact('email', 'john@example.com');
+        
+        // Verify data is in localStorage
+        let stored = localStorage.getItem('cv-storage');
+        expect(stored).toBeTruthy();
+
+        // Clear all
+        store.clearAll();
+
+        // Verify localStorage is updated with empty state
+        stored = localStorage.getItem('cv-storage');
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            expect(parsed.state.name).toBe('');
+            expect(parsed.state.contact.email).toBe('');
+        }
+    });
+
+    it('should include version information in persisted data', () => {
+        const store = useCvStore.getState();
+        
+        store.setBasic('name', 'Test User');
+
+        const stored = localStorage.getItem('cv-storage');
+        expect(stored).toBeTruthy();
+        
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            expect(parsed.version).toBe(1);
+        }
+    });
+});
