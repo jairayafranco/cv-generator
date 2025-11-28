@@ -18,7 +18,7 @@ export default function App() {
         startEditProjects: projectsEditMode.startEdit,
       }}
     >
-      <div className="md:flex h-screen">
+      <div className="md:flex h-screen bg-gradient-to-br from-base-200 via-base-100 to-base-200">
         <Editor 
           experienceEditMode={experienceEditMode}
           educationEditMode={educationEditMode}

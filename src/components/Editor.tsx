@@ -170,10 +170,10 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
     const languagesValidation = useFormValidation(languagesSchema);
 
     return (
-        <div className="flex-1 p-4 mb-5 overflow-auto">
-
-            <section className="mt-4">
-                <h1 className="text-3xl font-bold">Basic Info</h1>
+        <div className="flex-1 p-6 mb-5 overflow-auto bg-gradient-to-b from-base-100 to-base-200 border-r border-base-300/50" data-theme="dark">
+            <div className="max-w-4xl mx-auto">
+            <section className="mt-4 card-modern">
+                <h1 className="text-3xl font-bold font-display gradient-text mb-6">Basic Info</h1>
 
                 <div className="form-control w-full max-w-sm mt-4">
                     <label className="label" htmlFor="profile-image">
@@ -249,7 +249,7 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                             id="name-input"
                             type="text"
                             placeholder="Your name"
-                            className={`input input-bordered w-full ${basicInfoValidation.errors.name ? 'input-error' : ''}`}
+                            className={`input input-bordered input-modern w-full ${basicInfoValidation.errors.name ? 'input-error' : ''}`}
                             value={name}
                             aria-required="true"
                             aria-invalid={basicInfoValidation.errors.name ? "true" : "false"}
@@ -274,7 +274,7 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                             id="role-input"
                             type="text"
                             placeholder="Your role"
-                            className={`input input-bordered w-full ${basicInfoValidation.errors.role ? 'input-error' : ''}`}
+                            className={`input input-bordered input-modern w-full ${basicInfoValidation.errors.role ? 'input-error' : ''}`}
                             value={role}
                             aria-required="true"
                             aria-invalid={basicInfoValidation.errors.role ? "true" : "false"}
@@ -298,7 +298,7 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                     </label>
                     <textarea
                         id="bio-input"
-                        className="textarea textarea-bordered w-full"
+                        className="textarea textarea-bordered input-modern w-full"
                         placeholder="Your bio"
                         value={bio}
                         onChange={(e) => setBasic("bio", e.currentTarget.value)}
@@ -306,10 +306,10 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                 </div>
             </section>
 
-            <div className="divider"></div>
+            <div className="divider-modern"></div>
 
-            <section>
-                <h1 className="text-3xl font-bold mt-4">Social Networks</h1>
+            <section className="card-modern">
+                <h1 className="text-3xl font-bold font-display gradient-text mb-6">Social Networks</h1>
                 <div className="grid grid-cols-3 gap-4 mt-4">
                     {socialNetworks.map((socialNetwork) => {
                         const fieldName = socialNetwork.name as keyof Contact;
@@ -327,7 +327,7 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                                     id={inputId}
                                     type="text"
                                     placeholder={socialNetwork.label}
-                                    className={`input input-bordered w-full ${contactValidation.errors[fieldName] ? 'input-error' : ''}`}
+                                    className={`input input-bordered input-modern w-full ${contactValidation.errors[fieldName] ? 'input-error' : ''}`}
                                     value={contact[fieldName]}
                                     aria-required={isRequired ? "true" : "false"}
                                     aria-invalid={contactValidation.errors[fieldName] ? "true" : "false"}
@@ -349,10 +349,10 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                 </div>
             </section>
 
-            <div className="divider"></div>
+            <div className="divider-modern"></div>
 
-            <section className="mt-4">
-                <h1 className="text-3xl font-bold">Experience</h1>
+            <section className="card-modern">
+                <h1 className="text-3xl font-bold font-display gradient-text mb-6">Experience</h1>
 
                 <form ref={experienceFormRef} onSubmit={(e) => {
                     e.preventDefault();
@@ -390,7 +390,7 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                                 name="title"
                                 type="text"
                                 placeholder="Your title"
-                                className={`input input-bordered w-full ${experienceValidation.errors.title ? 'input-error' : ''}`}
+                                className={`input input-bordered input-modern w-full ${experienceValidation.errors.title ? 'input-error' : ''}`}
                                 aria-required="true"
                                 aria-invalid={experienceValidation.errors.title ? "true" : "false"}
                                 aria-describedby={experienceValidation.errors.title ? "exp-title-error" : undefined}
@@ -456,7 +456,7 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                                 name="startDate"
                                 type="date"
                                 placeholder="Start Date"
-                                className={`input input-bordered w-full max-w-xs ${experienceValidation.errors.startDate ? 'input-error' : ''}`}
+                                className={`input input-bordered input-modern w-full max-w-xs ${experienceValidation.errors.startDate ? 'input-error' : ''}`}
                                 aria-required="true"
                                 aria-invalid={experienceValidation.errors.startDate ? "true" : "false"}
                                 aria-describedby={experienceValidation.errors.startDate ? "exp-startDate-error" : undefined}
@@ -520,13 +520,13 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                         <textarea
                             id="exp-description"
                             name="description"
-                            className="textarea textarea-bordered w-full"
+                            className="textarea textarea-bordered input-modern w-full"
                             placeholder="Description"
                         />
                     </div>
 
                     <div className="flex gap-2 mt-4">
-                        <button type="submit" className="btn btn-sm btn-primary">
+                        <button type="submit" className="btn btn-sm btn-primary shadow-soft hover:shadow-medium transition-all duration-200">
                             {experienceEditMode.isEditing ? 'Update Experience' : 'Add Experience'}
                         </button>
                         {experienceEditMode.isEditing && (
@@ -547,10 +547,10 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                 </form>
             </section>
 
-            <div className="divider"></div>
+            <div className="divider-modern"></div>
 
-            <section className="mt-4">
-                <h1 className="text-3xl font-bold">Education</h1>
+            <section className="card-modern">
+                <h1 className="text-3xl font-bold font-display gradient-text mb-6">Education</h1>
 
                 <form ref={educationFormRef} onSubmit={(e) => {
                     e.preventDefault();
@@ -584,7 +584,7 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                                 name="title" 
                                 type="text" 
                                 placeholder="Your degree" 
-                                className={`input input-bordered w-full ${educationValidation.errors.title ? 'input-error' : ''}`}
+                                className={`input input-bordered input-modern w-full ${educationValidation.errors.title ? 'input-error' : ''}`}
                                 aria-required="true"
                                 aria-invalid={educationValidation.errors.title ? "true" : "false"}
                                 aria-describedby={educationValidation.errors.title ? "edu-title-error" : undefined}
@@ -650,7 +650,7 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                                 name="startDate" 
                                 type="date" 
                                 placeholder="Start Date" 
-                                className={`input input-bordered w-full max-w-xs ${educationValidation.errors.startDate ? 'input-error' : ''}`}
+                                className={`input input-bordered input-modern w-full max-w-xs ${educationValidation.errors.startDate ? 'input-error' : ''}`}
                                 aria-required="true"
                                 aria-invalid={educationValidation.errors.startDate ? "true" : "false"}
                                 aria-describedby={educationValidation.errors.startDate ? "edu-startDate-error" : undefined}
@@ -687,7 +687,7 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                     </div>
 
                     <div className="flex gap-2 mt-4">
-                        <button type="submit" className="btn btn-sm btn-primary">
+                        <button type="submit" className="btn btn-sm btn-primary shadow-soft hover:shadow-medium transition-all duration-200">
                             {educationEditMode.isEditing ? 'Update Education' : 'Add Education'}
                         </button>
                         {educationEditMode.isEditing && (
@@ -707,10 +707,10 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                 </form>
             </section>
 
-            <div className="divider"></div>
+            <div className="divider-modern"></div>
 
-            <section className="mt-4">
-                <h1 className="text-3xl font-bold">Skills</h1>
+            <section className="card-modern">
+                <h1 className="text-3xl font-bold font-display gradient-text mb-6">Skills</h1>
 
                 <form onSubmit={(e) => {
                     e.preventDefault();
@@ -734,7 +734,7 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                         <textarea
                             id="skills-input"
                             name="skills"
-                            className={`textarea textarea-bordered w-full ${skillsValidation.errors.skills ? 'textarea-error' : ''}`}
+                            className={`textarea textarea-bordered input-modern w-full ${skillsValidation.errors.skills ? 'textarea-error' : ''}`}
                             placeholder="Separate your skills with a comma ( , )"
                             aria-required="true"
                             aria-invalid={skillsValidation.errors.skills ? "true" : "false"}
@@ -747,16 +747,16 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                             </label>
                         )}
                     </div>
-                    <button className="btn btn-sm btn-primary mt-4">
+                    <button className="btn btn-sm btn-primary mt-4 shadow-soft hover:shadow-medium transition-all duration-200">
                         Add Skills
                     </button>
                 </form>
             </section>
 
-            <div className="divider"></div>
+            <div className="divider-modern"></div>
 
-            <section className="mt-4">
-                <h1 className="text-3xl font-bold">Projects</h1>
+            <section className="card-modern">
+                <h1 className="text-3xl font-bold font-display gradient-text mb-6">Projects</h1>
 
                 <form ref={projectsFormRef} onSubmit={(e) => {
                     e.preventDefault();
@@ -789,7 +789,7 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                                 name="name" 
                                 type="text" 
                                 placeholder="Name" 
-                                className={`input input-bordered w-full ${projectsValidation.errors.name ? 'input-error' : ''}`}
+                                className={`input input-bordered input-modern w-full ${projectsValidation.errors.name ? 'input-error' : ''}`}
                                 aria-required="true"
                                 aria-invalid={projectsValidation.errors.name ? "true" : "false"}
                                 aria-describedby={projectsValidation.errors.name ? "project-name-error" : undefined}
@@ -824,7 +824,7 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                         </div>
                     </div>
                     <div className="flex gap-2 mt-4">
-                        <button type="submit" className="btn btn-sm btn-primary">
+                        <button type="submit" className="btn btn-sm btn-primary shadow-soft hover:shadow-medium transition-all duration-200">
                             {projectsEditMode.isEditing ? 'Update Project' : 'Add Project'}
                         </button>
                         {projectsEditMode.isEditing && (
@@ -844,10 +844,10 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                 </form>
             </section>
 
-            <div className="divider"></div>
+            <div className="divider-modern"></div>
 
-            <section className="mt-4">
-                <h1 className="text-3xl font-bold">Certifications</h1>
+            <section className="card-modern">
+                <h1 className="text-3xl font-bold font-display gradient-text mb-6">Certifications</h1>
 
                 <form onSubmit={(e) => {
                     e.preventDefault();
@@ -871,7 +871,7 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                         <textarea
                             id="certifications-input"
                             name="certifications"
-                            className={`textarea textarea-bordered w-full ${certificationsValidation.errors.certifications ? 'textarea-error' : ''}`}
+                            className={`textarea textarea-bordered input-modern w-full ${certificationsValidation.errors.certifications ? 'textarea-error' : ''}`}
                             placeholder="Separate your certifications with a comma ( , )"
                             aria-required="true"
                             aria-invalid={certificationsValidation.errors.certifications ? "true" : "false"}
@@ -884,16 +884,16 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                             </label>
                         )}
                     </div>
-                    <button className="btn btn-sm btn-primary mt-4">
+                    <button className="btn btn-sm btn-primary mt-4 shadow-soft hover:shadow-medium transition-all duration-200">
                         Add Certifications
                     </button>
                 </form>
             </section>
 
-            <div className="divider"></div>
+            <div className="divider-modern"></div>
 
-            <section className="mt-4">
-                <h1 className="text-3xl font-bold">Languages</h1>
+            <section className="card-modern">
+                <h1 className="text-3xl font-bold font-display gradient-text mb-6">Languages</h1>
 
                 <form onSubmit={(e) => {
                     e.preventDefault();
@@ -917,7 +917,7 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                         <textarea
                             id="languages-input"
                             name="languages"
-                            className={`textarea textarea-bordered w-full ${languagesValidation.errors.languages ? 'textarea-error' : ''}`}
+                            className={`textarea textarea-bordered input-modern w-full ${languagesValidation.errors.languages ? 'textarea-error' : ''}`}
                             placeholder="Separate your languages with a comma ( , )"
                             aria-required="true"
                             aria-invalid={languagesValidation.errors.languages ? "true" : "false"}
@@ -930,21 +930,21 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                             </label>
                         )}
                     </div>
-                    <button className="btn btn-sm btn-primary mt-4">
+                    <button className="btn btn-sm btn-primary mt-4 shadow-soft hover:shadow-medium transition-all duration-200">
                         Add Languages
                     </button>
                 </form>
             </section>
 
-            <div className="divider"></div>
+            <div className="divider-modern"></div>
 
-            <section className="mt-4 mb-8">
-                <h1 className="text-3xl font-bold">Data Management</h1>
-                <p className="text-sm text-gray-600 mt-2">Manage your CV data: export for backup, import from file, or start fresh.</p>
+            <section className="card-modern mb-8">
+                <h1 className="text-3xl font-bold font-display gradient-text mb-4">Data Management</h1>
+                <p className="text-sm text-base-content/70 mt-2 mb-4">Manage your CV data: export for backup, import from file, or start fresh.</p>
                 
                 <div className="flex flex-wrap gap-4 mt-4">
                     <button 
-                        className="btn btn-sm btn-primary"
+                        className="btn btn-sm btn-primary shadow-soft hover:shadow-medium transition-all duration-200"
                         onClick={handleExportData}
                         aria-label="Export CV data to JSON file"
                     >
@@ -955,7 +955,7 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                     </button>
 
                     <button 
-                        className="btn btn-sm btn-secondary"
+                        className="btn btn-sm btn-secondary shadow-soft hover:shadow-medium transition-all duration-200"
                         onClick={handleImportClick}
                         aria-label="Import CV data from JSON file"
                     >
@@ -966,7 +966,7 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                     </button>
 
                     <button 
-                        className="btn btn-sm btn-error"
+                        className="btn btn-sm btn-error shadow-soft hover:shadow-medium transition-all duration-200"
                         onClick={() => setShowClearDialog(true)}
                         aria-label="Clear all CV data"
                     >
@@ -1005,6 +1005,7 @@ export default function Editor({ experienceEditMode, educationEditMode, projects
                 onConfirm={handleClearAll}
                 onCancel={() => setShowClearDialog(false)}
             />
+            </div>
         </div>
     );
 

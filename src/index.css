@@ -1,35 +1,212 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* Accessibility: Visible focus indicators */
 @layer base {
+  * {
+    @apply transition-colors duration-200;
+  }
+
+  body {
+    @apply font-sans antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
   /* Ensure all interactive elements have visible focus indicators */
   *:focus-visible {
-    @apply outline-2 outline-offset-2 outline-primary;
+    @apply outline-2 outline-offset-2 outline-primary-500;
   }
 
   /* Enhanced focus for buttons */
   button:focus-visible,
   a:focus-visible {
-    @apply ring-2 ring-primary ring-offset-2;
+    @apply ring-2 ring-primary-500 ring-offset-2;
   }
 
   /* Enhanced focus for form inputs */
   input:focus-visible,
   textarea:focus-visible,
   select:focus-visible {
-    @apply ring-2 ring-primary;
+    @apply ring-2 ring-primary-500 ring-offset-1;
   }
 
   /* Ensure keyboard navigation is visible */
   .btn:focus-visible {
-    @apply ring-2 ring-primary ring-offset-2;
+    @apply ring-2 ring-primary-500 ring-offset-2;
   }
 
   /* Skip to main content link for keyboard users */
   .skip-to-main {
     @apply absolute -top-full left-0 bg-primary text-primary-content px-4 py-2 z-50;
     @apply focus:top-0;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-base-200;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-base-300 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-base-content/20;
+  }
+}
+
+@layer components {
+  /* Modern card style */
+  .card-modern {
+    @apply bg-base-100 rounded-xl shadow-soft border border-base-200 p-6;
+    @apply transition-all duration-300 hover:shadow-medium;
+  }
+
+  /* Dark theme specific adjustments */
+  [data-theme="dark"] .card-modern {
+    @apply bg-base-200/95 border-base-300/40 shadow-lg;
+    @apply backdrop-blur-sm;
+  }
+
+  [data-theme="dark"] .card-modern:hover {
+    @apply shadow-xl border-base-300/60;
+  }
+
+  [data-theme="dark"] .input-modern {
+    @apply bg-base-300/60 border-base-300/50 text-base-content;
+    @apply placeholder:text-base-content/50;
+  }
+
+  [data-theme="dark"] .input-modern:focus {
+    @apply bg-base-300/80 border-primary-400 ring-2 ring-primary-400/30;
+  }
+
+  [data-theme="dark"] .textarea {
+    @apply bg-base-300/60 border-base-300/50 text-base-content;
+    @apply placeholder:text-base-content/50;
+  }
+
+  [data-theme="dark"] .textarea:focus {
+    @apply bg-base-300/80 border-primary-400 ring-2 ring-primary-400/30;
+  }
+
+  [data-theme="dark"] .divider-modern::after {
+    @apply border-base-300/40;
+  }
+
+  /* Dark theme text adjustments */
+  [data-theme="dark"] .label-text {
+    @apply text-base-content font-medium;
+  }
+
+  [data-theme="dark"] .label-text-alt {
+    @apply text-base-content/75;
+  }
+
+  [data-theme="dark"] h1,
+  [data-theme="dark"] h2,
+  [data-theme="dark"] h3 {
+    @apply text-base-content;
+  }
+
+  /* Dark theme buttons */
+  [data-theme="dark"] .btn-primary {
+    @apply shadow-lg;
+  }
+
+  [data-theme="dark"] .btn-primary:hover {
+    @apply shadow-xl brightness-110;
+  }
+
+  [data-theme="dark"] .btn-secondary {
+    @apply shadow-lg;
+  }
+
+  [data-theme="dark"] .btn-secondary:hover {
+    @apply shadow-xl brightness-110;
+  }
+
+  [data-theme="dark"] .btn-error {
+    @apply shadow-lg;
+  }
+
+  [data-theme="dark"] .btn-error:hover {
+    @apply shadow-xl brightness-110;
+  }
+
+  /* Dark theme file input */
+  [data-theme="dark"] .file-input {
+    @apply bg-base-300/60 border-base-300/50 text-base-content;
+  }
+
+  [data-theme="dark"] .file-input:focus {
+    @apply bg-base-300/80 border-primary-400 ring-2 ring-primary-400/30;
+  }
+
+  /* Dark theme checkbox */
+  [data-theme="dark"] .checkbox {
+    @apply border-base-300/50;
+  }
+
+  [data-theme="dark"] .checkbox:checked {
+    @apply border-primary-400 bg-primary-400;
+  }
+
+  /* Dark theme scrollbar */
+  [data-theme="dark"] ::-webkit-scrollbar-track {
+    @apply bg-base-200/50;
+  }
+
+  [data-theme="dark"] ::-webkit-scrollbar-thumb {
+    @apply bg-base-300/70 rounded-full;
+  }
+
+  [data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    @apply bg-base-300;
+  }
+
+  /* Modern input style */
+  .input-modern {
+    @apply transition-all duration-200;
+    @apply focus:border-primary-500 focus:ring-primary-500/20;
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg;
+    @apply border border-white/20 dark:border-gray-700/20;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary-400 to-secondary bg-clip-text text-transparent;
+  }
+
+  [data-theme="dark"] .gradient-text {
+    @apply from-primary-300 via-primary-400 to-secondary;
+    @apply drop-shadow-sm;
+  }
+
+  /* Section divider with gradient */
+  .divider-modern {
+    @apply relative my-8;
+  }
+
+  .divider-modern::after {
+    @apply absolute inset-0 flex items-center;
+    @apply w-full border-t border-base-300;
+    content: '';
   }
 }

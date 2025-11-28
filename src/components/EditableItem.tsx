@@ -49,9 +49,9 @@ export default function EditableItem({
 
   return (
     <div className="relative group" role="article" aria-label={`${type}: ${itemLabel}`}>
-      <div className="absolute top-0 right-0 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute top-0 right-0 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 bg-base-100/90 backdrop-blur-sm rounded-lg p-1 shadow-soft">
         <button
-          className="btn btn-sm btn-circle btn-ghost"
+          className="btn btn-sm btn-circle btn-ghost hover:bg-primary/10 hover:text-primary transition-all duration-200"
           onClick={handleEdit}
           aria-label={`Edit ${itemLabel}`}
           title="Edit"
@@ -59,7 +59,7 @@ export default function EditableItem({
           <FiEdit2 size={16} />
         </button>
         <button
-          className="btn btn-sm btn-circle btn-ghost text-error"
+          className="btn btn-sm btn-circle btn-ghost text-error hover:bg-error/10 transition-all duration-200"
           onClick={handleDelete}
           aria-label={`Delete ${itemLabel}`}
           title="Delete"
